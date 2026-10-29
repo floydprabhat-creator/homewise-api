@@ -6,13 +6,14 @@ import type { SessionAuth } from '../../utils/auth.js';
 import { isUniqueViolation } from '../../utils/db-errors.js';
 import * as householdsRepository from '../households/households.repository.js';
 import * as invitesService from '../invites/invites.service.js';
+import { avatarUrl } from '../users/avatar-url.js';
 import * as usersRepository from '../users/users.repository.js';
 import type { LoginInput, RegisterInput } from './auth.schemas.js';
 
 type Membership = Awaited<ReturnType<typeof householdsRepository.findActiveMembership>>;
 
 export type SessionContext = {
-  user: { id: string; name: string; email: string; createdAt: Date };
+  user: { id: string; name: string; email: string; avatarUrl: string | null; createdAt: Date };
   household: { id: string; name: string; type: 'PERSONAL' | 'FAMILY' } | null;
   role: 'HEAD' | 'MEMBER' | null;
   needsOnboarding: boolean;
@@ -26,7 +27,7 @@ const DUMMY_HASH = '$2b$12$GmIJjUL3Q6BtpHzRscbPk.sZ4O1TK4SAEn/yP1iXOTpNjPymVqoxa
 
 function toSessionContext(user: User, membership: Membership): SessionContext {
   return {
-    user: { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt },
+    user: { id: user.id, name: user.name, email: user.email, avatarUrl: avatarUrl(user.id, user.avatarKey), createdAt: user.createdAt },
     household: membership?.household ?? null,
     role: membership?.role ?? null,
     needsOnboarding: !membership,
@@ -74,12 +75,16 @@ export async function getSessionContext(userId: string): Promise<SessionContext>
   return toSessionContext(user, membership);
 }
 
-/** Used by requireAuth on every request. Returns null when the user no longer exists. */
-export async function resolveSession(userId: string): Promise<SessionAuth | null> {
+/**
+ * Used by requireAuth on every request. Returns null when the user no longer exists, or when the
+ * token was issued before their last password change (that signs out every other device).
+ */
+export async function resolveSession(userId: string, issuedAt: number): Promise<SessionAuth | null> {
   const [user, membership] = await Promise.all([
     usersRepository.findById(userId),
     householdsRepository.findActiveMembership(userId),
   ]);
   if (!user) return null;
+  if (user.passwordChangedAt && issuedAt < Math.floor(user.passwordChangedAt.getTime() / 1000)) return null;
   return { userId, householdId: membership?.household.id ?? null, role: membership?.role ?? null };
 }

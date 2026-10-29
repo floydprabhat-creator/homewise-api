@@ -8,6 +8,7 @@ import * as budgetsService from '../budgets/budgets.service.js';
 import * as thresholdsService from '../budgets/thresholds.service.js';
 import * as categoriesRepository from '../categories/categories.repository.js';
 import * as categoriesService from '../categories/categories.service.js';
+import { avatarUrl } from '../users/avatar-url.js';
 import * as usersRepository from '../users/users.repository.js';
 import * as householdsRepository from './households.repository.js';
 import type { OnboardingInput, UpdateHouseholdInput } from './households.schemas.js';
@@ -21,7 +22,10 @@ export async function get(auth: AuthContext) {
     householdsRepository.listActiveMembers(auth.householdId),
   ]);
   if (!household) throw AppError.notFound('Household not found');
-  return { household, members };
+  return {
+    household,
+    members: members.map(({ avatarKey, ...m }) => ({ ...m, avatarUrl: avatarUrl(m.userId, avatarKey) })),
+  };
 }
 
 /**

@@ -17,3 +17,17 @@ export async function create(data: Pick<NewUser, 'name' | 'email' | 'passwordHas
   const [user] = await client.insert(users).values(data).returning();
   return user!;
 }
+
+export async function updateName(id: string, name: string) {
+  const [user] = await db.update(users).set({ name }).where(eq(users.id, id)).returning();
+  return user;
+}
+
+export async function setAvatarKey(id: string, avatarKey: string | null) {
+  const [user] = await db.update(users).set({ avatarKey }).where(eq(users.id, id)).returning();
+  return user;
+}
+
+export async function updatePassword(id: string, passwordHash: string, changedAt: Date) {
+  await db.update(users).set({ passwordHash, passwordChangedAt: changedAt }).where(eq(users.id, id));
+}

@@ -13,11 +13,13 @@ import { internalRouter } from './modules/internal/internal.routes.js';
 import { invitesRouter } from './modules/invites/invites.routes.js';
 import { notificationsRouter } from './modules/notifications/notifications.routes.js';
 import { transactionsRouter } from './modules/transactions/transactions.routes.js';
+import { usersRouter } from './modules/users/users.routes.js';
 
 export const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/household', householdsRouter);
+apiRouter.use('/users', usersRouter);
 apiRouter.use('/invites', invitesRouter);
 apiRouter.use('/categories', categoriesRouter);
 apiRouter.use('/budgets', budgetsRouter);

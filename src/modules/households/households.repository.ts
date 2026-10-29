@@ -79,6 +79,7 @@ export function listActiveMembers(householdId: string) {
       userId: users.id,
       name: users.name,
       email: users.email,
+      avatarKey: users.avatarKey,
       role: householdMembers.role,
       joinedAt: householdMembers.joinedAt,
     })
