@@ -38,8 +38,6 @@ function decorate(rows: OccurrenceRow[], members: Member[], today: string) {
   });
 }
 
-export type OccurrenceListItem = ReturnType<typeof decorate>[number];
-
 async function listDecorated(householdId: string, filters: occurrencesRepository.OccurrenceFilters) {
   const [rows, members] = await Promise.all([
     occurrencesRepository.list(householdId, filters),

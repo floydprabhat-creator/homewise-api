@@ -38,4 +38,3 @@ export const householdMembers = pgTable(
 );
 
 export type Household = typeof households.$inferSelect;
-export type HouseholdMember = typeof householdMembers.$inferSelect;

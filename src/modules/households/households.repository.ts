@@ -42,7 +42,7 @@ export async function findById(householdId: string) {
   return row;
 }
 
-/** The head's user id (F6 bills, F9 notifications). */
+/** The head's user id, for bills and notifications. */
 export async function findHeadId(householdId: string) {
   const [row] = await db
     .select({ userId: householdMembers.userId })

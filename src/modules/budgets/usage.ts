@@ -3,19 +3,19 @@ import { fromPaise, percentOf, toPaise } from '../../utils/money.js';
 
 /** Pure usage maths: no database, so it can be unit-tested with plain objects. */
 
-export const WARNING_PERCENT = 80;
-export const EXCEEDED_PERCENT = 100;
+const WARNING_PERCENT = 80;
+const EXCEEDED_PERCENT = 100;
 
-export type BucketState = 'OK' | 'WARNING' | 'EXCEEDED' | 'TARGET_REACHED';
+type BucketState = 'OK' | 'WARNING' | 'EXCEEDED' | 'TARGET_REACHED';
 export type LimitState = 'OK' | 'WARNING' | 'EXCEEDED';
 
-export type UsageBudget = {
+type UsageBudget = {
   totalAmount: string;
   allocations: Record<Bucket, number>;
   targets: { categoryId: string; name: string; percent: number }[];
 } | null;
 
-export type UsageSums = {
+type UsageSums = {
   total: string;
   byBucket: { bucket: Bucket; spent: string }[];
   byTargetCategory: { categoryId: string; spent: string }[];

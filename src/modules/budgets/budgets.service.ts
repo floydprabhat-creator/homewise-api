@@ -85,7 +85,7 @@ export async function upsert(auth: AuthContext, month: string, input: UpsertBudg
 
 /**
  * For each household without a budget in `month`, copy its latest earlier budget.
- * Run by the daily job on the 1st (F9 schedules it and notifies the head).
+ * Run by the daily job; the head is notified when their budget is carried over.
  */
 export async function carryOver(month: string) {
   const householdIds = await budgetsRepository.listHouseholdsWithoutBudget(month);

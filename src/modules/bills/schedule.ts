@@ -3,7 +3,7 @@ import { addDays, addMonths, daysInMonth } from '../../utils/dates.js';
 
 const STEP_MONTHS: Record<Exclude<Frequency, 'ONE_TIME'>, number> = { MONTHLY: 1, QUARTERLY: 3, YEARLY: 12 };
 
-export type DisplayStatus = 'PAID' | 'OVERDUE' | 'DUE_SOON' | 'UPCOMING';
+type DisplayStatus = 'PAID' | 'OVERDUE' | 'DUE_SOON' | 'UPCOMING';
 
 /**
  * The due date after `current`, or null for a one-time bill. Keeps the bill's anchor day and clamps

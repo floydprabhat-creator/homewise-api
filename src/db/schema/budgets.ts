@@ -47,5 +47,3 @@ export const categoryTargets = pgTable(
   },
   (t) => [primaryKey({ columns: [t.budgetId, t.categoryId] })],
 );
-
-export type MonthlyBudget = typeof monthlyBudgets.$inferSelect;

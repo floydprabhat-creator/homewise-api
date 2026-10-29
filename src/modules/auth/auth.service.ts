@@ -29,7 +29,6 @@ function toSessionContext(user: User, membership: Membership): SessionContext {
     user: { id: user.id, name: user.name, email: user.email, createdAt: user.createdAt },
     household: membership?.household ?? null,
     role: membership?.role ?? null,
-    // F3 extends this: a head who has a household but no budget yet also needs onboarding.
     needsOnboarding: !membership,
   };
 }

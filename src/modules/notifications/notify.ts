@@ -3,7 +3,7 @@ import type { DbClient } from '../../db/types.js';
 import type { NotificationType } from '../../shared/constants.js';
 import * as notificationsRepository from './notifications.repository.js';
 
-export type NotifyInput = {
+type NotifyInput = {
   userId: string;
   householdId: string;
   type: NotificationType;
@@ -11,7 +11,7 @@ export type NotifyInput = {
   body: string;
   link?: string;
   dedupeKey: string;
-  /** Queue an email too (F9's sender job picks up PENDING rows). */
+  /** Queue an email too (the send-emails job picks up PENDING rows). */
   email: boolean;
 };
 

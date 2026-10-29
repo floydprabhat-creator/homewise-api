@@ -64,4 +64,3 @@ export const billOccurrences = pgTable(
 );
 
 export type Bill = typeof bills.$inferSelect;
-export type BillOccurrence = typeof billOccurrences.$inferSelect;

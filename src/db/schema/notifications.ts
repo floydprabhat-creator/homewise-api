@@ -3,7 +3,7 @@ import { emailStatusEnum, notificationTypeEnum } from './enums.js';
 import { households } from './households.js';
 import { users } from './users.js';
 
-/** In-app notifications, and the email outbox for those that also send email (F9 sends them). */
+/** In-app notifications, and the email outbox for those that also send email (sent by the send-emails job). */
 export const notifications = pgTable(
   'notifications',
   {

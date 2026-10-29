@@ -230,7 +230,7 @@ export async function accept(userId: string, token: string, input: AcceptInviteI
   });
 }
 
-/** Daily job (F9 schedules it). */
+/** Run by the daily job. */
 export async function expireOld(now = new Date()) {
   return { expired: await invitesRepository.expireOld(now) };
 }

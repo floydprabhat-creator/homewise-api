@@ -150,7 +150,7 @@ async function generateForBill(bill: GeneratableBill, today: string) {
   return occurrencesRepository.createMany(rows);
 }
 
-/** Daily job (F9 schedules it): every active recurring bill, all households. Safe to run repeatedly. */
+/** Run by the daily job: every active recurring bill, all households. Safe to run repeatedly. */
 export async function generateUpcoming(today: string) {
   const recurring = await billsRepository.listActiveRecurring();
   let created = 0;

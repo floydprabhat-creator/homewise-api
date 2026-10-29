@@ -54,5 +54,4 @@ export const attachments = pgTable(
   (t) => [index('attachments_transaction_idx').on(t.transactionId)],
 );
 
-export type Transaction = typeof transactions.$inferSelect;
 export type Attachment = typeof attachments.$inferSelect;

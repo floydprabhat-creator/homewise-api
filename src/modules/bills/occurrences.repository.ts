@@ -195,7 +195,7 @@ export async function sumUnpaidDueInMonth(householdId: string, month: string, cl
   return row ?? { total: '0.00', count: 0 };
 }
 
-/** F9: unpaid occurrences inside their reminder window (or overdue), in active households, all households. */
+/** For the bill reminders job: unpaid occurrences inside their reminder window or overdue, in every active household. */
 export function listForReminders(today: string) {
   return db
     .select({
