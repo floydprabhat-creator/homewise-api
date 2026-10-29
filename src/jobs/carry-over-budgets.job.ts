@@ -1,6 +1,6 @@
 import * as budgetsService from '../modules/budgets/budgets.service.js';
-import { currentMonthIST } from '../utils/dates.js';
+import { monthOf } from '../utils/dates.js';
 
-export function carryOverBudgetsJob() {
-  return budgetsService.carryOver(currentMonthIST());
+export function carryOverBudgetsJob(today: string) {
+  return budgetsService.carryOver(monthOf(today));
 }

@@ -5,8 +5,11 @@ import { BUCKETS } from '../../shared/constants.js';
 import { AppError } from '../../utils/app-error.js';
 import type { AuthContext } from '../../utils/auth.js';
 import { currentMonthIST } from '../../utils/dates.js';
+import { formatINR, monthName } from '../../utils/format.js';
 import { toHundredths } from '../../utils/money.js';
 import * as categoriesRepository from '../categories/categories.repository.js';
+import * as householdsRepository from '../households/households.repository.js';
+import { notify } from '../notifications/notify.js';
 import * as budgetsRepository from './budgets.repository.js';
 import type { UpsertBudgetInput } from './budgets.schemas.js';
 import { RECOMMENDED_SPLIT } from './recommendation.js';
@@ -105,8 +108,22 @@ export async function carryOver(month: string) {
         tx,
       ),
     );
-    if (inserted) created += 1;
-    // F9: notify the head that this month's budget was carried over.
+    if (!inserted) continue;
+    created += 1;
+
+    const headId = await householdsRepository.findHeadId(householdId);
+    if (headId) {
+      await notify({
+        householdId,
+        userId: headId,
+        type: 'BUDGET_CARRIED_OVER',
+        title: `${monthName(month)} budget carried over`,
+        body: `${formatINR(previous.totalAmount)} with last month's split. Change it any time this month.`,
+        link: '/budget',
+        dedupeKey: `carry_over:${householdId}:${month}`,
+        email: true,
+      });
+    }
   }
 
   logger.info({ month, created }, 'Budget carry-over finished');

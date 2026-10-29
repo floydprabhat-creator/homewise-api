@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, lt, lte, or, sql, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '../../db/index.js';
-import { attachments, billOccurrences, bills, categories, transactions, users } from '../../db/schema/index.js';
+import { attachments, billOccurrences, bills, categories, households, transactions, users } from '../../db/schema/index.js';
 import type { DbClient } from '../../db/types.js';
 import type { OccurrenceStatus } from '../../shared/constants.js';
 import { monthRange } from '../../utils/dates.js';
@@ -193,4 +193,29 @@ export async function sumUnpaidDueInMonth(householdId: string, month: string, cl
       ),
     );
   return row ?? { total: '0.00', count: 0 };
+}
+
+/** F9: unpaid occurrences inside their reminder window (or overdue), in active households, all households. */
+export function listForReminders(today: string) {
+  return db
+    .select({
+      id: billOccurrences.id,
+      householdId: billOccurrences.householdId,
+      dueDate: billOccurrences.dueDate,
+      amountDue: billOccurrences.amountDue,
+      assigneeId: billOccurrences.assigneeId,
+      billName: bills.name,
+      remindDaysBefore: bills.remindDaysBefore,
+    })
+    .from(billOccurrences)
+    .innerJoin(bills, eq(bills.id, billOccurrences.billId))
+    .innerJoin(households, eq(households.id, billOccurrences.householdId))
+    .where(
+      and(
+        eq(billOccurrences.status, 'UNPAID'),
+        eq(households.status, 'ACTIVE'),
+        sql`${billOccurrences.dueDate} - ${bills.remindDaysBefore} <= ${today}::date`,
+      ),
+    )
+    .orderBy(asc(billOccurrences.dueDate));
 }

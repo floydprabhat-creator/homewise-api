@@ -27,9 +27,26 @@ Created by `pnpm db:seed`. Log in at http://localhost:3000/login with the web ap
 
 The seed refuses to run when `NODE_ENV=production`, and running it again leaves an existing demo user unchanged.
 
-## Emails in development
+## Emails
 
-With `EMAIL_DRIVER=log` (the default), emails such as family invites are printed to the API log instead of being sent. Copy the invite link from there.
+With `EMAIL_DRIVER=log` (the default when `RESEND_API_KEY` is empty), emails such as family invites and bill reminders are printed to the API log instead of being sent. Copy invite links from there. Set `RESEND_API_KEY` and `EMAIL_FROM` to send through Resend.
+
+## Background jobs
+
+The server schedules `daily` at 08:00 IST (expire invites → carry over budgets → generate bill occurrences → bill reminders) and `send-emails` every 5 minutes. Every job is idempotent, so running one twice changes nothing.
+
+Run one by hand, optionally as if it were another day:
+
+```bash
+pnpm job daily 2026-11-07
+```
+
+Or over HTTP, for an external scheduler when the host sleeps through 08:00 (`date` is ignored in production):
+
+```bash
+curl -X POST http://localhost:4000/api/internal/jobs/daily/run \
+  -H "x-cron-secret: $CRON_SECRET" -H 'content-type: application/json' -d '{"date":"2026-11-07"}'
+```
 
 ## Scripts
 
@@ -41,6 +58,6 @@ With `EMAIL_DRIVER=log` (the default), emails such as family invites are printed
 | `pnpm db:generate` | Generate a SQL migration from `src/db/schema/` changes |
 | `pnpm db:migrate` | Apply pending migrations |
 | `pnpm db:seed` | Seed local demo data |
-| `pnpm job <name>` | Run a background job once: `generate-occurrences`, `carry-over-budgets`, `expire-invites` (safe to repeat) |
+| `pnpm job <name> [date]` | Run a job once: `daily`, `send-emails`, `expire-invites`, `carry-over-budgets`, `generate-occurrences`, `bill-reminders` |
 | `pnpm db:check` | Test the database connection |
 | `pnpm db:studio` | Open Drizzle Studio |

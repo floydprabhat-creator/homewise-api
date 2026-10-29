@@ -9,7 +9,9 @@ import { budgetsRouter } from './modules/budgets/budgets.routes.js';
 import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { householdsRouter } from './modules/households/households.routes.js';
+import { internalRouter } from './modules/internal/internal.routes.js';
 import { invitesRouter } from './modules/invites/invites.routes.js';
+import { notificationsRouter } from './modules/notifications/notifications.routes.js';
 import { transactionsRouter } from './modules/transactions/transactions.routes.js';
 
 export const apiRouter = Router();
@@ -24,4 +26,6 @@ apiRouter.use('/attachments', attachmentsRouter);
 apiRouter.use('/bills', billsRouter);
 apiRouter.use('/bill-occurrences', occurrencesRouter);
 apiRouter.use('/dashboard', dashboardRouter);
+apiRouter.use('/notifications', notificationsRouter);
+apiRouter.use('/internal', internalRouter);
 if (env.STORAGE_DRIVER === 'local') apiRouter.use('/files', filesRouter);
