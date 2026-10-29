@@ -10,7 +10,7 @@ import * as categoriesRepository from '../categories/categories.repository.js';
 import * as categoriesService from '../categories/categories.service.js';
 import * as usersRepository from '../users/users.repository.js';
 import * as householdsRepository from './households.repository.js';
-import type { OnboardingInput } from './households.schemas.js';
+import type { OnboardingInput, UpdateHouseholdInput } from './households.schemas.js';
 
 const alreadyInHousehold = () =>
   new AppError(409, 'ALREADY_IN_HOUSEHOLD', 'You already belong to a household');
@@ -69,4 +69,13 @@ export async function onboarding(userId: string, input: OnboardingInput) {
 
   await thresholdsService.checkAfterChange(householdId, month);
   return authService.getSessionContext(userId);
+}
+
+/** Rename, or turn a personal household into a family. All data stays where it is. */
+export async function update(auth: AuthContext, input: UpdateHouseholdInput) {
+  const household = await householdsRepository.findById(auth.householdId);
+  if (!household) throw AppError.notFound('Household not found');
+  const updated = await householdsRepository.update(auth.householdId, { name: input.name, type: input.type });
+  if (!updated) throw AppError.notFound('Household not found');
+  return updated;
 }

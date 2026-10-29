@@ -9,12 +9,14 @@ import { budgetsRouter } from './modules/budgets/budgets.routes.js';
 import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { householdsRouter } from './modules/households/households.routes.js';
+import { invitesRouter } from './modules/invites/invites.routes.js';
 import { transactionsRouter } from './modules/transactions/transactions.routes.js';
 
 export const apiRouter = Router();
 
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/household', householdsRouter);
+apiRouter.use('/invites', invitesRouter);
 apiRouter.use('/categories', categoriesRouter);
 apiRouter.use('/budgets', budgetsRouter);
 apiRouter.use('/transactions', transactionsRouter);

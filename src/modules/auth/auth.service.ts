@@ -1,9 +1,11 @@
+import { withTransaction } from '../../db/transaction.js';
 import { comparePassword, hashPassword } from '../../lib/password.js';
 import type { User } from '../../db/schema/index.js';
 import { AppError } from '../../utils/app-error.js';
 import type { SessionAuth } from '../../utils/auth.js';
 import { isUniqueViolation } from '../../utils/db-errors.js';
 import * as householdsRepository from '../households/households.repository.js';
+import * as invitesService from '../invites/invites.service.js';
 import * as usersRepository from '../users/users.repository.js';
 import type { LoginInput, RegisterInput } from './auth.schemas.js';
 
@@ -38,9 +40,16 @@ export async function register(input: RegisterInput): Promise<SessionContext> {
   const passwordHash = await hashPassword(input.password);
 
   try {
-    // F2: when input.inviteToken is set, create the user and call invitesService.acceptForNewUser() in one transaction.
-    const user = await usersRepository.create({ name: input.name, email: input.email, passwordHash });
-    return toSessionContext(user, undefined);
+    const data = { name: input.name, email: input.email, passwordHash };
+    if (!input.inviteToken) return toSessionContext(await usersRepository.create(data), undefined);
+
+    // Signing up from an invite: the account and the membership are created together, or neither is.
+    const user = await withTransaction(async (tx) => {
+      const created = await usersRepository.create(data, tx);
+      await invitesService.acceptForNewUser(input.inviteToken!, created, tx);
+      return created;
+    });
+    return toSessionContext(user, await householdsRepository.findActiveMembership(user.id));
   } catch (err) {
     // Two signups with the same email at the same moment: the unique index rejects the second.
     if (isUniqueViolation(err, 'users_email_idx')) throw emailTaken();

@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, count, eq, sql } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { householdMembers, households, users } from '../../db/schema/index.js';
 import type { DbClient } from '../../db/types.js';
@@ -86,4 +86,57 @@ export function listActiveMembers(householdId: string) {
     .innerJoin(users, eq(users.id, householdMembers.userId))
     .where(and(eq(householdMembers.householdId, householdId), eq(householdMembers.status, 'ACTIVE')))
     .orderBy(asc(householdMembers.joinedAt));
+}
+
+export async function countActiveMembers(householdId: string, client: DbClient = db) {
+  const [row] = await client
+    .select({ value: count() })
+    .from(householdMembers)
+    .where(and(eq(householdMembers.householdId, householdId), eq(householdMembers.status, 'ACTIVE')));
+  return row?.value ?? 0;
+}
+
+/** The user's ACTIVE membership in this household, or undefined. */
+export async function findActiveMember(householdId: string, userId: string) {
+  const [row] = await db
+    .select({ userId: householdMembers.userId, role: householdMembers.role })
+    .from(householdMembers)
+    .where(
+      and(
+        eq(householdMembers.householdId, householdId),
+        eq(householdMembers.userId, userId),
+        eq(householdMembers.status, 'ACTIVE'),
+      ),
+    )
+    .limit(1);
+  return row;
+}
+
+export async function update(householdId: string, data: Partial<{ name: string; type: HouseholdType }>) {
+  const [row] = await db
+    .update(households)
+    .set(data)
+    .where(eq(households.id, householdId))
+    .returning({ id: households.id, name: households.name, type: households.type });
+  return row;
+}
+
+export async function archive(householdId: string, client: DbClient = db) {
+  await client.update(households).set({ status: 'ARCHIVED' }).where(eq(households.id, householdId));
+}
+
+/** Sets the ACTIVE membership REMOVED; their spending stays in history. Returns false when there was none. */
+export async function removeMember(householdId: string, userId: string, client: DbClient = db) {
+  const rows = await client
+    .update(householdMembers)
+    .set({ status: 'REMOVED', removedAt: sql`now()` })
+    .where(
+      and(
+        eq(householdMembers.householdId, householdId),
+        eq(householdMembers.userId, userId),
+        eq(householdMembers.status, 'ACTIVE'),
+      ),
+    )
+    .returning({ id: householdMembers.id });
+  return rows.length > 0;
 }

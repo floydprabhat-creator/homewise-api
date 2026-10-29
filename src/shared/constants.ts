@@ -41,3 +41,6 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
 export const EMAIL_STATUSES = ['NOT_REQUIRED', 'PENDING', 'SENT', 'FAILED'] as const;
 export type EmailStatus = (typeof EMAIL_STATUSES)[number];
+
+export const INVITE_STATUSES = ['PENDING', 'ACCEPTED', 'REVOKED', 'EXPIRED'] as const;
+export type InviteStatus = (typeof INVITE_STATUSES)[number];

@@ -27,6 +27,10 @@ Created by `pnpm db:seed`. Log in at http://localhost:3000/login with the web ap
 
 The seed refuses to run when `NODE_ENV=production`, and running it again leaves an existing demo user unchanged.
 
+## Emails in development
+
+With `EMAIL_DRIVER=log` (the default), emails such as family invites are printed to the API log instead of being sent. Copy the invite link from there.
+
 ## Scripts
 
 | Script | Does |
@@ -37,6 +41,6 @@ The seed refuses to run when `NODE_ENV=production`, and running it again leaves 
 | `pnpm db:generate` | Generate a SQL migration from `src/db/schema/` changes |
 | `pnpm db:migrate` | Apply pending migrations |
 | `pnpm db:seed` | Seed local demo data |
-| `pnpm job <name>` | Run a background job once: `generate-occurrences`, `carry-over-budgets` (safe to repeat) |
+| `pnpm job <name>` | Run a background job once: `generate-occurrences`, `carry-over-budgets`, `expire-invites` (safe to repeat) |
 | `pnpm db:check` | Test the database connection |
 | `pnpm db:studio` | Open Drizzle Studio |

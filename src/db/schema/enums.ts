@@ -7,6 +7,7 @@ import {
   FREQUENCIES,
   HOUSEHOLD_STATUSES,
   HOUSEHOLD_TYPES,
+  INVITE_STATUSES,
   MEMBER_STATUSES,
   NOTIFICATION_TYPES,
   OCCURRENCE_STATUSES,
@@ -24,3 +25,4 @@ export const billStatusEnum = pgEnum('bill_status', BILL_STATUSES);
 export const occurrenceStatusEnum = pgEnum('occurrence_status', OCCURRENCE_STATUSES);
 export const notificationTypeEnum = pgEnum('notification_type', NOTIFICATION_TYPES);
 export const emailStatusEnum = pgEnum('email_status', EMAIL_STATUSES);
+export const inviteStatusEnum = pgEnum('invite_status', INVITE_STATUSES);
