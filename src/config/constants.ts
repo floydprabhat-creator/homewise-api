@@ -1,0 +1,16 @@
+export const SESSION_COOKIE = 'hw_session';
+export const SESSION_TTL_DAYS = 7;
+export const SESSION_TTL_MS = SESSION_TTL_DAYS * 24 * 60 * 60 * 1000;
+
+export const BCRYPT_COST = 12;
+
+export const LOGIN_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 5 };
+export const REGISTER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 10 };
+
+export const TIMEZONE = 'Asia/Kolkata';
+export const PAGE_SIZE = 20;
+
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
+export const MAX_FILES_PER_ENTRY = 3;
+export const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
+export const SIGNED_URL_TTL_SECONDS = 5 * 60;
