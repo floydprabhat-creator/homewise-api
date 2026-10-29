@@ -3,7 +3,7 @@ import { requireAuth } from '../../middleware/require-auth.js';
 import { requireHead } from '../../middleware/require-head.js';
 import { upload } from '../../middleware/upload.js';
 import { validate } from '../../middleware/validate.js';
-import { idParamSchema } from '../../shared/common.schemas.js';
+import { idParamSchema } from '../../domain/common.schemas.js';
 import * as occurrencesController from './occurrences.controller.js';
 import { listOccurrencesQuerySchema, payOccurrenceSchema, updateOccurrenceSchema } from './bills.schemas.js';
 

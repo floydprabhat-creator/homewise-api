@@ -1,4 +1,4 @@
-import { BUCKETS, type Bucket } from '../../shared/constants.js';
+import { BUCKETS, type Bucket } from '../../domain/constants.js';
 import { fromPaise, percentOf, toPaise } from '../../utils/money.js';
 
 /** Pure usage maths: no database, so it can be unit-tested with plain objects. */

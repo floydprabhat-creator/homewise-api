@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { uuidSchema } from '../../shared/common.schemas.js';
+import { uuidSchema } from '../../domain/common.schemas.js';
 
 export const updateProfileSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(80, 'Keep the name under 80 characters'),

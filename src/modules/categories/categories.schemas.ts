@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BUCKETS } from '../../shared/constants.js';
+import { BUCKETS } from '../../domain/constants.js';
 
 const nameSchema = z.string().trim().min(1, 'Name is required').max(40, 'Name is too long');
 

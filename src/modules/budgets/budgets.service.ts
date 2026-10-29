@@ -1,7 +1,7 @@
 import { withTransaction } from '../../db/transaction.js';
 import type { DbClient } from '../../db/types.js';
 import { logger } from '../../lib/logger.js';
-import { BUCKETS } from '../../shared/constants.js';
+import { BUCKETS } from '../../domain/constants.js';
 import { AppError } from '../../utils/app-error.js';
 import type { AuthContext } from '../../utils/auth.js';
 import { currentMonthIST } from '../../utils/dates.js';

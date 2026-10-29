@@ -3,7 +3,7 @@ import { sendEmail, type Email } from '../../lib/email/index.js';
 import { billsEmail } from '../../lib/email/templates/bills.js';
 import { noticeEmail } from '../../lib/email/templates/notice.js';
 import { logger } from '../../lib/logger.js';
-import type { NotificationType } from '../../shared/constants.js';
+import type { NotificationType } from '../../domain/constants.js';
 import * as notificationsRepository from './notifications.repository.js';
 
 const BATCH_SIZE = 100;

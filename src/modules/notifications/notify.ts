@@ -1,6 +1,6 @@
 import { db } from '../../db/index.js';
 import type { DbClient } from '../../db/types.js';
-import type { NotificationType } from '../../shared/constants.js';
+import type { NotificationType } from '../../domain/constants.js';
 import * as notificationsRepository from './notifications.repository.js';
 
 type NotifyInput = {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { amountSchema, percentSchema, uuidSchema } from '../../shared/common.schemas.js';
+import { amountSchema, percentSchema, uuidSchema } from '../../domain/common.schemas.js';
 import { toHundredths } from '../../utils/money.js';
 
 export const allocationsSchema = z.object({

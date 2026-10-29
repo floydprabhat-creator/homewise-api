@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { amountSchema, percentSchema, uuidSchema } from '../../shared/common.schemas.js';
-import { HOUSEHOLD_TYPES } from '../../shared/constants.js';
+import { amountSchema, percentSchema, uuidSchema } from '../../domain/common.schemas.js';
+import { HOUSEHOLD_TYPES } from '../../domain/constants.js';
 import { allocationsSchema, allocationsTotal100, allocationsTotalIssue } from '../budgets/budgets.schemas.js';
 
 /**

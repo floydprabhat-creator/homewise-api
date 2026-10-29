@@ -5,8 +5,8 @@ import {
   monthSchema,
   paginationSchema,
   uuidSchema,
-} from '../../shared/common.schemas.js';
-import { BUCKETS } from '../../shared/constants.js';
+} from '../../domain/common.schemas.js';
+import { BUCKETS } from '../../domain/constants.js';
 
 // Multipart forms send an empty string for a blank note; store that as no note.
 const noteSchema = z

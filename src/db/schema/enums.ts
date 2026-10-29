@@ -12,7 +12,7 @@ import {
   NOTIFICATION_TYPES,
   OCCURRENCE_STATUSES,
   ROLES,
-} from '../../shared/constants.js';
+} from '../../domain/constants.js';
 
 export const memberRoleEnum = pgEnum('member_role', ROLES);
 export const memberStatusEnum = pgEnum('member_status', MEMBER_STATUSES);

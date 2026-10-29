@@ -1,5 +1,5 @@
 import { logger } from '../../lib/logger.js';
-import type { Bucket } from '../../shared/constants.js';
+import type { Bucket } from '../../domain/constants.js';
 import { formatINR, monthName } from '../../utils/format.js';
 import * as householdsRepository from '../households/households.repository.js';
 import { notify } from '../notifications/notify.js';

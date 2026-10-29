@@ -1,6 +1,6 @@
 import { withTransaction } from '../../db/transaction.js';
 import { logger } from '../../lib/logger.js';
-import type { Frequency } from '../../shared/constants.js';
+import type { Frequency } from '../../domain/constants.js';
 import { AppError } from '../../utils/app-error.js';
 import type { AuthContext } from '../../utils/auth.js';
 import { addDays, todayIST } from '../../utils/dates.js';

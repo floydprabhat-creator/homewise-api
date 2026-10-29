@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { requireHead } from '../../middleware/require-head.js';
 import { validate } from '../../middleware/validate.js';
-import { idParamSchema } from '../../shared/common.schemas.js';
+import { idParamSchema } from '../../domain/common.schemas.js';
 import * as billsController from './bills.controller.js';
 import { createBillSchema, listBillsQuerySchema, updateBillSchema } from './bills.schemas.js';
 

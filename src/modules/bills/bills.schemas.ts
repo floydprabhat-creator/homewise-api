@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { amountSchema, dateSchema, uuidSchema } from '../../shared/common.schemas.js';
-import { BILL_AMOUNT_TYPES, FREQUENCIES, OCCURRENCE_STATUSES } from '../../shared/constants.js';
+import { amountSchema, dateSchema, uuidSchema } from '../../domain/common.schemas.js';
+import { BILL_AMOUNT_TYPES, FREQUENCIES, OCCURRENCE_STATUSES } from '../../domain/constants.js';
 
 const remindDaysSchema = z.coerce.number().int().min(1, 'At least 1 day').max(7, 'At most 7 days');
 

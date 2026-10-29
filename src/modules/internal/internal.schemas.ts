@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { JOB_NAMES } from '../../jobs/registry.js';
-import { dateSchema } from '../../shared/common.schemas.js';
+import { dateSchema } from '../../domain/common.schemas.js';
 
 export const jobNameSchema = z.object({ name: z.enum(JOB_NAMES) });
 

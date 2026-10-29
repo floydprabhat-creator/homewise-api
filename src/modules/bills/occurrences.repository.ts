@@ -3,7 +3,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { db } from '../../db/index.js';
 import { attachments, billOccurrences, bills, categories, households, transactions, users } from '../../db/schema/index.js';
 import type { DbClient } from '../../db/types.js';
-import type { OccurrenceStatus } from '../../shared/constants.js';
+import type { OccurrenceStatus } from '../../domain/constants.js';
 import { monthRange } from '../../utils/dates.js';
 
 type NewOccurrence = typeof billOccurrences.$inferInsert;

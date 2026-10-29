@@ -3,7 +3,7 @@ import { db } from '../../db/index.js';
 import { bills, categories, transactions } from '../../db/schema/index.js';
 import { DEFAULT_CATEGORIES } from '../../db/seed-data/categories.js';
 import type { DbClient } from '../../db/types.js';
-import { BUCKETS, type Bucket } from '../../shared/constants.js';
+import { BUCKETS, type Bucket } from '../../domain/constants.js';
 
 const columns = {
   id: categories.id,

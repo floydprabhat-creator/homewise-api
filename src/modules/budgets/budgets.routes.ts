@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { requireHead } from '../../middleware/require-head.js';
 import { validate } from '../../middleware/validate.js';
-import { monthParamSchema } from '../../shared/common.schemas.js';
+import { monthParamSchema } from '../../domain/common.schemas.js';
 import * as budgetsController from './budgets.controller.js';
 import { upsertBudgetSchema } from './budgets.schemas.js';
 

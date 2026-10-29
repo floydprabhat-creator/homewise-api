@@ -1,5 +1,5 @@
 import { withTransaction } from '../../db/transaction.js';
-import type { Role } from '../../shared/constants.js';
+import type { Role } from '../../domain/constants.js';
 import { AppError } from '../../utils/app-error.js';
 import type { AuthContext } from '../../utils/auth.js';
 import { addDays, addMonths, currentMonthIST, monthOf, monthRange, todayIST } from '../../utils/dates.js';

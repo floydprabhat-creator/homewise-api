@@ -1,5 +1,5 @@
 import { logger } from '../../lib/logger.js';
-import type { Role } from '../../shared/constants.js';
+import type { Role } from '../../domain/constants.js';
 import { addDays } from '../../utils/dates.js';
 import { formatDay, formatINR } from '../../utils/format.js';
 import * as occurrencesRepository from '../bills/occurrences.repository.js';

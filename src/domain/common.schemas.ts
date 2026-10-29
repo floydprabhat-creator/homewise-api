@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { PAGE_SIZE } from '../config/constants.js';
 
 export const uuidSchema = z.uuid();
 export const idParamSchema = z.object({ id: uuidSchema });
@@ -35,5 +34,3 @@ export const percentSchema = z.coerce
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
 });
-
-export { PAGE_SIZE };

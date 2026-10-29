@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { emailSchema } from '../../shared/common.schemas.js';
+import { emailSchema } from '../../domain/common.schemas.js';
 
 export const createInviteSchema = z.object({ email: emailSchema });
 

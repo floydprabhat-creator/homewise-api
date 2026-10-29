@@ -1,4 +1,4 @@
-import type { Bucket } from '../../shared/constants.js';
+import type { Bucket } from '../../domain/constants.js';
 
 /** The 20 categories every new household starts with (F4). */
 export const DEFAULT_CATEGORIES: Record<Bucket, string[]> = {

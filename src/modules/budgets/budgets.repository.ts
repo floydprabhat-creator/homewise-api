@@ -3,7 +3,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { db } from '../../db/index.js';
 import { budgetAllocations, categories, categoryTargets, households, monthlyBudgets } from '../../db/schema/index.js';
 import type { DbClient } from '../../db/types.js';
-import { BUCKETS, type Bucket } from '../../shared/constants.js';
+import { BUCKETS, type Bucket } from '../../domain/constants.js';
 
 export type BudgetData = {
   totalAmount: string;

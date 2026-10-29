@@ -1,4 +1,4 @@
-import type { Frequency, OccurrenceStatus } from '../../shared/constants.js';
+import type { Frequency, OccurrenceStatus } from '../../domain/constants.js';
 import { addDays, addMonths, daysInMonth } from '../../utils/dates.js';
 
 const STEP_MONTHS: Record<Exclude<Frequency, 'ONE_TIME'>, number> = { MONTHLY: 1, QUARTERLY: 3, YEARLY: 12 };

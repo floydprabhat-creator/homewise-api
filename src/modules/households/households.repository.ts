@@ -2,7 +2,7 @@ import { and, asc, count, eq, sql } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { householdMembers, households, users } from '../../db/schema/index.js';
 import type { DbClient } from '../../db/types.js';
-import type { HouseholdType, Role } from '../../shared/constants.js';
+import type { HouseholdType, Role } from '../../domain/constants.js';
 
 /** The user's ACTIVE membership with its household, or undefined. Used on every authenticated request. */
 export async function findActiveMembership(userId: string, client: DbClient = db) {

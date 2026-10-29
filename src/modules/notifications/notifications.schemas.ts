@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { paginationSchema } from '../../shared/common.schemas.js';
+import { paginationSchema } from '../../domain/common.schemas.js';
 
 export const listNotificationsQuerySchema = paginationSchema.extend({
   unreadOnly: z

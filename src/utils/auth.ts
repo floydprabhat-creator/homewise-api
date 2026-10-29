@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { Role } from '../shared/constants.js';
+import type { Role } from '../domain/constants.js';
 import { AppError } from './app-error.js';
 
 /** Set by requireAuth. householdId/role are null until the user finishes onboarding. */
