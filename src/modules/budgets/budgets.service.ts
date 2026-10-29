@@ -11,15 +11,18 @@ import * as budgetsRepository from './budgets.repository.js';
 import type { UpsertBudgetInput } from './budgets.schemas.js';
 import { RECOMMENDED_SPLIT } from './recommendation.js';
 import * as thresholdsService from './thresholds.service.js';
+import * as usageService from './usage.service.js';
 
 export function getRecommendation() {
   return RECOMMENDED_SPLIT;
 }
 
 export async function getByMonth(auth: AuthContext, month: string) {
-  const budget = await budgetsRepository.findByMonth(auth.householdId, month);
-  // F7 adds `usage` from usage.service.getBudgetUsage().
-  return { month, budget: budget ?? null, usage: null };
+  const [budget, usage] = await Promise.all([
+    budgetsRepository.findByMonth(auth.householdId, month),
+    usageService.getBudgetUsage(auth.householdId, month),
+  ]);
+  return { month, budget: budget ?? null, usage };
 }
 
 /** Rejects past months, unknown or archived target categories, and targets that overflow their bucket. */

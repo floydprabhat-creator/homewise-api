@@ -24,3 +24,20 @@ export type BillStatus = (typeof BILL_STATUSES)[number];
 
 export const OCCURRENCE_STATUSES = ['UNPAID', 'PAID'] as const;
 export type OccurrenceStatus = (typeof OCCURRENCE_STATUSES)[number];
+
+export const NOTIFICATION_TYPES = [
+  'BILL_REMINDER',
+  'BILL_ESCALATION',
+  'BILL_OVERDUE',
+  'BILL_ASSIGNED',
+  'BILL_PAID',
+  'BUDGET_WARNING',
+  'BUDGET_EXCEEDED',
+  'SAVINGS_TARGET_REACHED',
+  'BUDGET_CARRIED_OVER',
+  'INVITE_ACCEPTED',
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export const EMAIL_STATUSES = ['NOT_REQUIRED', 'PENDING', 'SENT', 'FAILED'] as const;
+export type EmailStatus = (typeof EMAIL_STATUSES)[number];

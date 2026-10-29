@@ -3,9 +3,11 @@ import type { Role } from '../../shared/constants.js';
 import { AppError } from '../../utils/app-error.js';
 import type { AuthContext } from '../../utils/auth.js';
 import { addDays, addMonths, currentMonthIST, monthOf, monthRange, todayIST } from '../../utils/dates.js';
+import { formatDay, formatINR } from '../../utils/format.js';
 import * as attachmentsService from '../attachments/attachments.service.js';
 import * as thresholdsService from '../budgets/thresholds.service.js';
 import * as householdsRepository from '../households/households.repository.js';
+import { notify } from '../notifications/notify.js';
 import * as transactionsRepository from '../transactions/transactions.repository.js';
 import * as transactionsService from '../transactions/transactions.service.js';
 import type { ListOccurrencesQuery, PayOccurrenceInput, UpdateOccurrenceInput } from './bills.schemas.js';
@@ -93,7 +95,20 @@ export async function update(auth: AuthContext, id: string, input: UpdateOccurre
   }
 
   await occurrencesRepository.update(auth.householdId, id, input);
-  // F9: if the assignee changed to a member, notify them (BILL_ASSIGNED).
+
+  const newAssignee = input.assigneeId;
+  if (newAssignee && newAssignee !== occurrence.assigneeId && newAssignee !== auth.userId) {
+    await notify({
+      householdId: auth.householdId,
+      userId: newAssignee,
+      type: 'BILL_ASSIGNED',
+      title: `You're paying ${occurrence.bill.name}`,
+      body: `${formatINR(input.amountDue ?? occurrence.amountDue)}, due ${formatDay(occurrence.dueDate)}.`,
+      link: '/bills',
+      dedupeKey: `bill_assigned:${id}:${newAssignee}`,
+      email: false,
+    });
+  }
   return findDecorated(auth.householdId, id);
 }
 
@@ -131,13 +146,28 @@ export async function pay(auth: AuthContext, id: string, input: PayOccurrenceInp
       },
       tx,
     );
+    // A member paying tells the head; it rolls back with the payment.
+    if (auth.role !== 'HEAD' && headId) {
+      await notify(
+        {
+          householdId: auth.householdId,
+          userId: headId,
+          type: 'BILL_PAID',
+          title: `${occurrence.bill.name} was paid`,
+          body: `${formatINR(input.paidAmount)} paid on ${formatDay(input.paidAt)}.`,
+          link: '/bills',
+          dedupeKey: `bill_paid:${id}`,
+          email: false,
+        },
+        tx,
+      );
+    }
     return entry.id;
   });
 
   // Files are stored after commit; a failed upload is reported, not rolled back.
   const { failed } = await attachmentsService.storeFiles(auth, transactionId, checked);
   await thresholdsService.checkAfterChange(auth.householdId, monthOf(input.paidAt));
-  // F9: if a member paid, notify the head (BILL_PAID).
 
   return { occurrence: await findDecorated(auth.householdId, id), failedFiles: failed };
 }
