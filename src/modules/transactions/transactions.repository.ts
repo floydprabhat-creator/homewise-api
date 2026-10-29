@@ -130,15 +130,22 @@ export async function findByOccurrence(householdId: string, occurrenceId: string
   return row;
 }
 
-/** Latest entries for the dashboard (F8). */
-export function listRecent(householdId: string, limit: number) {
+/** Latest entries for the dashboard (F8), optionally within one month. */
+export function listRecent(householdId: string, limit: number, month?: string) {
+  const range = month ? monthRange(month) : undefined;
   return db
     .select(entryColumns)
     .from(transactions)
     .innerJoin(categories, eq(categories.id, transactions.categoryId))
     .innerJoin(users, eq(users.id, transactions.recordedBy))
     .leftJoin(householdMembers, activeRecorder)
-    .where(eq(transactions.householdId, householdId))
+    .where(
+      and(
+        eq(transactions.householdId, householdId),
+        range ? gte(transactions.date, range.start) : undefined,
+        range ? lt(transactions.date, range.end) : undefined,
+      ),
+    )
     .orderBy(desc(transactions.date), desc(transactions.createdAt))
     .limit(limit);
 }
