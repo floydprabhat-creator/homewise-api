@@ -1,4 +1,5 @@
-import { date, index, integer, numeric, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { date, index, integer, numeric, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { billOccurrences } from './bills.js';
 import { categories } from './categories.js';
 import { timestamps } from './columns.js';
 import { households } from './households.js';
@@ -20,13 +21,14 @@ export const transactions = pgTable(
     amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
     date: date('date', { mode: 'string' }).notNull(),
     note: varchar('note', { length: 200 }),
-    /** Set when the entry was created by paying a bill (F6 adds the foreign key). */
-    billOccurrenceId: uuid('bill_occurrence_id'),
+    /** Set when the entry was created by paying a bill; at most one entry per occurrence. */
+    billOccurrenceId: uuid('bill_occurrence_id').references(() => billOccurrences.id),
     ...timestamps,
   },
   (t) => [
     index('transactions_household_date_idx').on(t.householdId, t.date),
     index('transactions_category_idx').on(t.categoryId),
+    uniqueIndex('transactions_bill_occurrence_idx').on(t.billOccurrenceId),
   ],
 );
 

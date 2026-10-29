@@ -37,5 +37,6 @@ The seed refuses to run when `NODE_ENV=production`, and running it again leaves 
 | `pnpm db:generate` | Generate a SQL migration from `src/db/schema/` changes |
 | `pnpm db:migrate` | Apply pending migrations |
 | `pnpm db:seed` | Seed local demo data |
+| `pnpm job <name>` | Run a background job once: `generate-occurrences`, `carry-over-budgets` (safe to repeat) |
 | `pnpm db:check` | Test the database connection |
 | `pnpm db:studio` | Open Drizzle Studio |

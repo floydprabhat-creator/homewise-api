@@ -15,6 +15,13 @@
       "when": 1793192994650,
       "tag": "0001_categories_budgets_spending",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793250045934,
+      "tag": "0002_bills",
+      "breakpoints": true
     }
   ]
 }

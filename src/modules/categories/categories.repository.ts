@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
 import { db } from '../../db/index.js';
-import { categories, transactions } from '../../db/schema/index.js';
+import { bills, categories, transactions } from '../../db/schema/index.js';
 import { DEFAULT_CATEGORIES } from '../../db/seed-data/categories.js';
 import type { DbClient } from '../../db/types.js';
 import { BUCKETS, type Bucket } from '../../shared/constants.js';
@@ -100,7 +100,12 @@ export async function hasTransactions(householdId: string, id: string) {
   return Boolean(row);
 }
 
-// F6 replaces this with a query on active bills once the bills table exists.
-export async function hasActiveBills(_householdId: string, _id: string) {
-  return false;
+/** Active or paused bills still create or hold payable occurrences in this category. */
+export async function hasActiveBills(householdId: string, id: string) {
+  const [row] = await db
+    .select({ id: bills.id })
+    .from(bills)
+    .where(and(eq(bills.householdId, householdId), eq(bills.categoryId, id), ne(bills.status, 'ARCHIVED')))
+    .limit(1);
+  return Boolean(row);
 }

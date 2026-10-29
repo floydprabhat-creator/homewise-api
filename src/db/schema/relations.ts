@@ -1,4 +1,5 @@
 import { relations } from 'drizzle-orm';
+import { billOccurrences, bills } from './bills.js';
 import { budgetAllocations, categoryTargets, monthlyBudgets } from './budgets.js';
 import { categories } from './categories.js';
 import { householdMembers, households } from './households.js';
@@ -45,4 +46,13 @@ export const transactionsRelations = relations(transactions, ({ one, many }) => 
 
 export const attachmentsRelations = relations(attachments, ({ one }) => ({
   transaction: one(transactions, { fields: [attachments.transactionId], references: [transactions.id] }),
+}));
+
+export const billsRelations = relations(bills, ({ one, many }) => ({
+  category: one(categories, { fields: [bills.categoryId], references: [categories.id] }),
+  occurrences: many(billOccurrences),
+}));
+
+export const billOccurrencesRelations = relations(billOccurrences, ({ one }) => ({
+  bill: one(bills, { fields: [billOccurrences.billId], references: [bills.id] }),
 }));

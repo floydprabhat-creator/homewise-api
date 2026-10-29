@@ -113,12 +113,20 @@ export async function remove(auth: AuthContext, id: string) {
   await attachmentsRepository.remove(auth.householdId, id);
 }
 
-/** Deletes every stored file of an entry. Failures are logged, not thrown, so the entry can still be deleted. */
-export async function deleteStoredFiles(householdId: string, transactionId: string) {
+/** Storage keys of an entry's files, read before the entry is deleted (its rows cascade). */
+export async function listStorageKeys(householdId: string, transactionId: string) {
   const files = await attachmentsRepository.listByTransaction(householdId, transactionId);
+  return files.map((f) => f.storageKey);
+}
+
+/** Deletes stored files. Failures are logged, not thrown, so the entry can still be deleted. */
+export async function deleteKeys(keys: string[]) {
   await Promise.all(
-    files.map((f) =>
-      storage.delete(f.storageKey).catch((err) => logger.error({ err, key: f.storageKey }, 'Deleting file failed')),
-    ),
+    keys.map((key) => storage.delete(key).catch((err) => logger.error({ err, key }, 'Deleting file failed'))),
   );
+}
+
+/** Deletes every stored file of an entry. */
+export async function deleteStoredFiles(householdId: string, transactionId: string) {
+  await deleteKeys(await listStorageKeys(householdId, transactionId));
 }

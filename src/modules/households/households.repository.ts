@@ -42,6 +42,37 @@ export async function findById(householdId: string) {
   return row;
 }
 
+/** The head's user id (F6 bills, F9 notifications). */
+export async function findHeadId(householdId: string) {
+  const [row] = await db
+    .select({ userId: householdMembers.userId })
+    .from(householdMembers)
+    .where(
+      and(
+        eq(householdMembers.householdId, householdId),
+        eq(householdMembers.role, 'HEAD'),
+        eq(householdMembers.status, 'ACTIVE'),
+      ),
+    )
+    .limit(1);
+  return row?.userId;
+}
+
+export async function isActiveMember(householdId: string, userId: string) {
+  const [row] = await db
+    .select({ id: householdMembers.id })
+    .from(householdMembers)
+    .where(
+      and(
+        eq(householdMembers.householdId, householdId),
+        eq(householdMembers.userId, userId),
+        eq(householdMembers.status, 'ACTIVE'),
+      ),
+    )
+    .limit(1);
+  return Boolean(row);
+}
+
 export function listActiveMembers(householdId: string) {
   return db
     .select({

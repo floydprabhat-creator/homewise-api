@@ -116,8 +116,18 @@ export async function update(
     .where(and(eq(transactions.householdId, householdId), eq(transactions.id, id)));
 }
 
-export async function remove(householdId: string, id: string) {
-  await db.delete(transactions).where(and(eq(transactions.householdId, householdId), eq(transactions.id, id)));
+export async function remove(householdId: string, id: string, client: DbClient = db) {
+  await client.delete(transactions).where(and(eq(transactions.householdId, householdId), eq(transactions.id, id)));
+}
+
+/** The spending entry created by paying an occurrence (F6 undo). */
+export async function findByOccurrence(householdId: string, occurrenceId: string, client: DbClient = db) {
+  const [row] = await client
+    .select({ id: transactions.id, date: transactions.date })
+    .from(transactions)
+    .where(and(eq(transactions.householdId, householdId), eq(transactions.billOccurrenceId, occurrenceId)))
+    .limit(1);
+  return row;
 }
 
 /** Latest entries for the dashboard (F8). */

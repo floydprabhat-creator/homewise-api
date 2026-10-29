@@ -4,4 +4,5 @@ export * from './households.js';
 export * from './categories.js';
 export * from './budgets.js';
 export * from './transactions.js';
+export * from './bills.js';
 export * from './relations.js';

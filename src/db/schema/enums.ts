@@ -1,8 +1,22 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { BUCKETS, HOUSEHOLD_STATUSES, HOUSEHOLD_TYPES, MEMBER_STATUSES, ROLES } from '../../shared/constants.js';
+import {
+  BILL_AMOUNT_TYPES,
+  BILL_STATUSES,
+  BUCKETS,
+  FREQUENCIES,
+  HOUSEHOLD_STATUSES,
+  HOUSEHOLD_TYPES,
+  MEMBER_STATUSES,
+  OCCURRENCE_STATUSES,
+  ROLES,
+} from '../../shared/constants.js';
 
 export const memberRoleEnum = pgEnum('member_role', ROLES);
 export const memberStatusEnum = pgEnum('member_status', MEMBER_STATUSES);
 export const householdTypeEnum = pgEnum('household_type', HOUSEHOLD_TYPES);
 export const householdStatusEnum = pgEnum('household_status', HOUSEHOLD_STATUSES);
 export const bucketEnum = pgEnum('bucket', BUCKETS);
+export const frequencyEnum = pgEnum('bill_frequency', FREQUENCIES);
+export const billAmountTypeEnum = pgEnum('bill_amount_type', BILL_AMOUNT_TYPES);
+export const billStatusEnum = pgEnum('bill_status', BILL_STATUSES);
+export const occurrenceStatusEnum = pgEnum('occurrence_status', OCCURRENCE_STATUSES);
