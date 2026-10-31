@@ -12,7 +12,19 @@ export const app = express();
 app.set('trust proxy', env.TRUST_PROXY);
 app.disable('x-powered-by');
 
-app.use(pinoHttp({ logger }));
+// Some URLs carry credentials: the invite token (valid for 7 days) and the signature on file links.
+const SECRET_IN_URL: [RegExp, string][] = [
+  [/^(\/api\/invites\/)[^/?]+/, '$1[redacted]'],
+  [/^(\/api\/files\/[^?]*)\?.*$/, '$1?[redacted]'],
+];
+const maskUrl = (url: string) => SECRET_IN_URL.reduce((u, [pattern, replacement]) => u.replace(pattern, replacement), url);
+
+app.use(
+  pinoHttp({
+    logger,
+    serializers: { req: (req: { url: string }) => Object.assign(req, { url: maskUrl(req.url) }) },
+  }),
+);
 app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 
