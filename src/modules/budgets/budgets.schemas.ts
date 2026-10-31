@@ -8,7 +8,7 @@ export const allocationsSchema = z.object({
   SAVINGS: percentSchema,
 });
 
-export type Allocations = z.infer<typeof allocationsSchema>;
+type Allocations = z.infer<typeof allocationsSchema>;
 
 export const allocationsTotal100 = (a: Allocations) =>
   toHundredths(a.ESSENTIALS) + toHundredths(a.LIFESTYLE) + toHundredths(a.SAVINGS) === 10000;

@@ -9,18 +9,14 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   /** The web app, for links in emails. */
   APP_URL: z.url().default('http://localhost:3000'),
-  /**
-   * 'log' prints emails instead of sending them. Defaults to 'smtp' when SMTP_USER is set, else
-   * 'resend' when RESEND_API_KEY is set, else 'log'.
-   */
-  EMAIL_DRIVER: z.enum(['log', 'resend', 'smtp']).optional(),
-  RESEND_API_KEY: z.string().optional(),
+  /** 'log' prints emails instead of sending them. Defaults to 'smtp' when SMTP_USER is set, else 'log'. */
+  EMAIL_DRIVER: z.enum(['log', 'smtp']).optional(),
   /** SMTP via Nodemailer; the defaults are Gmail's (sign in with an App Password, not the account password). */
   SMTP_HOST: z.string().default('smtp.gmail.com'),
   SMTP_PORT: z.coerce.number().int().positive().default(465),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  /** Without it: "HomeWise <SMTP_USER>" for SMTP, Resend's test sender for Resend. */
+  /** Without it: "HomeWise <SMTP_USER>". */
   EMAIL_FROM: z.string().optional(),
   /** Google Gemini, for reading bill photos and PDFs. Without a key the "Fill in from a bill" feature is off. */
   GEMINI_API_KEY: z.string().optional(),
@@ -41,17 +37,12 @@ if (!parsed.success) {
 }
 
 const data = parsed.data;
-const emailDriver = data.EMAIL_DRIVER ?? (data.SMTP_USER ? 'smtp' : data.RESEND_API_KEY ? 'resend' : 'log');
-if (emailDriver === 'resend' && !data.RESEND_API_KEY) {
-  console.error('EMAIL_DRIVER=resend needs RESEND_API_KEY');
-  process.exit(1);
-}
+const emailDriver = data.EMAIL_DRIVER ?? (data.SMTP_USER ? 'smtp' : 'log');
 if (emailDriver === 'smtp' && !(data.SMTP_USER && data.SMTP_PASS)) {
   console.error('EMAIL_DRIVER=smtp needs SMTP_USER and SMTP_PASS');
   process.exit(1);
 }
-const emailFrom =
-  data.EMAIL_FROM ?? (emailDriver === 'smtp' ? `HomeWise <${data.SMTP_USER}>` : 'HomeWise <onboarding@resend.dev>');
+const emailFrom = data.EMAIL_FROM || `HomeWise <${data.SMTP_USER ?? 'no-reply@localhost'}>`;
 
 export const env = { ...data, EMAIL_DRIVER: emailDriver, EMAIL_FROM: emailFrom };
 export const isProduction = env.NODE_ENV === 'production';

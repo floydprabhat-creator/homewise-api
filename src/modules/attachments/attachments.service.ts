@@ -16,8 +16,8 @@ const EXTENSIONS: Record<AllowedType, string> = {
   'application/pdf': 'pdf',
 };
 
-export type CheckedFile = { buffer: Buffer; originalName: string; size: number; contentType: AllowedType };
-export type FailedFile = { name: string; reason: string };
+type CheckedFile = { buffer: Buffer; originalName: string; size: number; contentType: AllowedType };
+type FailedFile = { name: string; reason: string };
 
 const invalidFile = (message: string) =>
   new AppError(400, 'INVALID_FILE', message, { files: message });

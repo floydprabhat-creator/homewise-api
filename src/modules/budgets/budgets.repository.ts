@@ -5,7 +5,7 @@ import { budgetAllocations, categories, categoryTargets, households, monthlyBudg
 import type { DbClient } from '../../db/types.js';
 import { BUCKETS, type Bucket } from '../../domain/constants.js';
 
-export type BudgetData = {
+type BudgetData = {
   totalAmount: string;
   allocations: Record<Bucket, number>;
   targets: { categoryId: string; percent: number }[];

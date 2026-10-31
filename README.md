@@ -29,7 +29,7 @@ The seed refuses to run when `NODE_ENV=production`, and running it again leaves 
 
 ## Emails
 
-With `EMAIL_DRIVER=log` (the default when neither `SMTP_USER` nor `RESEND_API_KEY` is set), emails such as family invites and bill reminders are printed to the API log instead of being sent. Copy invite links from there. To send for real, set `SMTP_USER` and `SMTP_PASS` (Gmail address + App Password; Nodemailer), or `RESEND_API_KEY` and `EMAIL_FROM` (needs a verified domain).
+With `EMAIL_DRIVER=log` (the default when `SMTP_USER` is not set), emails such as family invites and bill reminders are printed to the API log instead of being sent. Copy invite links from there. To send for real, set `SMTP_USER` and `SMTP_PASS` (a Gmail address and an App Password); Nodemailer sends through Gmail's SMTP server.
 
 ## Background jobs
 

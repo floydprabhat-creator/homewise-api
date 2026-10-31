@@ -1,7 +1,7 @@
 import { ApiError, GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { env } from '../../config/env.js';
 
-export type AiFile = { buffer: Buffer; mimeType: string };
+type AiFile = { buffer: Buffer; mimeType: string };
 
 // Also Gemini's own deadline. A healthy model reads a bill in about 10 seconds; a congested one can
 // take minutes, so a timeout moves on to the next model instead of waiting.

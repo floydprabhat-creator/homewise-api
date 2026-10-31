@@ -70,7 +70,7 @@ export async function checkAfterChange(householdId: string, month: string): Prom
         if (created && m.role === 'HEAD') emailQueued = true;
       }
     }
-    // Budget alerts are emailed now, not at the next 08:00 run. Not awaited: the response doesn't wait on Resend.
+    // Budget alerts are emailed now, not at the next 08:00 run. Not awaited: the response doesn't wait on the email server.
     if (emailQueued) {
       emailsService.sendPending().catch((err) => logger.error({ err, householdId }, 'Sending budget alert email failed'));
     }

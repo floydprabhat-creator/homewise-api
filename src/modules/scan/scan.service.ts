@@ -12,7 +12,7 @@ import * as categoriesRepository from '../categories/categories.repository.js';
 type Category = { id: string; name: string; bucket: string };
 
 /** What the forms get back. Every field is null when the bill doesn't clearly show it. */
-export type ScannedBill = {
+type ScannedBill = {
   readable: boolean;
   merchant: string | null;
   amount: string | null;

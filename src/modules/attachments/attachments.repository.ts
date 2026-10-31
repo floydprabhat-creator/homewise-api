@@ -3,7 +3,7 @@ import { db } from '../../db/index.js';
 import { attachments, transactions } from '../../db/schema/index.js';
 import type { DbClient } from '../../db/types.js';
 
-export const publicColumns = {
+const publicColumns = {
   id: attachments.id,
   contentType: attachments.contentType,
   sizeBytes: attachments.sizeBytes,
