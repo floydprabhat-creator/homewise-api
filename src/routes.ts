@@ -8,6 +8,7 @@ import { occurrencesRouter } from './modules/bills/occurrences.routes.js';
 import { budgetsRouter } from './modules/budgets/budgets.routes.js';
 import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
+import { healthRouter } from './modules/health/health.routes.js';
 import { householdsRouter } from './modules/households/households.routes.js';
 import { internalRouter } from './modules/internal/internal.routes.js';
 import { invitesRouter } from './modules/invites/invites.routes.js';
@@ -17,6 +18,7 @@ import { usersRouter } from './modules/users/users.routes.js';
 
 export const apiRouter = Router();
 
+apiRouter.use('/health', healthRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/household', householdsRouter);
 apiRouter.use('/users', usersRouter);

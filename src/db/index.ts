@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { env } from '../config/env.js';
@@ -14,6 +15,11 @@ pool.on('error', (err) => {
 });
 
 export const db = drizzle({ client: pool, schema });
+
+/** For the health check: throws when Postgres can't be reached. */
+export async function pingDb() {
+  await db.execute(sql`select 1`);
+}
 
 export async function closeDb() {
   await pool.end();
