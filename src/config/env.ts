@@ -22,6 +22,10 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   /** Without it: "HomeWise <SMTP_USER>" for SMTP, Resend's test sender for Resend. */
   EMAIL_FROM: z.string().optional(),
+  /** Google Gemini, for reading bill photos and PDFs. Without a key the "Fill in from a bill" feature is off. */
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default('gemini-3.8-flash'),
+  GEMINI_FALLBACK_MODEL: z.string().default('gemini-3.5-flash'),
   /** Guards POST /internal/jobs/:name/run. Without it the endpoint refuses every call. */
   CRON_SECRET: z.string().min(16).optional(),
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),

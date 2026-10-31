@@ -18,3 +18,6 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES_PER_ENTRY = 3;
 export const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
 export const SIGNED_URL_TTL_SECONDS = 5 * 60;
+
+/** Bill scans per household per day, so a bug or misuse can't exhaust the AI quota. */
+export const BILL_SCANS_PER_DAY = 50;
