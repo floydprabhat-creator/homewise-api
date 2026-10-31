@@ -6,6 +6,7 @@ export const BCRYPT_COST = 12;
 
 export const LOGIN_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 5 };
 export const REGISTER_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 10 };
+export const PASSWORD_RESET_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 10 };
 
 export const INVITE_TTL_DAYS = 7;
 export const MAX_HOUSEHOLD_MEMBERS = 10;

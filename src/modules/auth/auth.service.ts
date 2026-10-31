@@ -8,7 +8,8 @@ import * as householdsRepository from '../households/households.repository.js';
 import * as invitesService from '../invites/invites.service.js';
 import { avatarUrl } from '../users/avatar-url.js';
 import * as usersRepository from '../users/users.repository.js';
-import type { LoginInput, RegisterInput } from './auth.schemas.js';
+import * as usersService from '../users/users.service.js';
+import type { LoginInput, PasswordResetCodeInput, RegisterInput, ResetPasswordInput } from './auth.schemas.js';
 
 type Membership = Awaited<ReturnType<typeof householdsRepository.findActiveMembership>>;
 
@@ -64,6 +65,16 @@ export async function login(input: LoginInput): Promise<SessionContext> {
 
   const membership = await householdsRepository.findActiveMembership(user.id);
   return toSessionContext(user, membership);
+}
+
+export function sendPasswordResetCode(input: PasswordResetCodeInput) {
+  return usersService.sendResetCode(input.email);
+}
+
+/** Forgot password: sets the new password, then signs this device in like a login. */
+export async function resetPassword(input: ResetPasswordInput): Promise<SessionContext> {
+  const user = await usersService.resetPassword(input);
+  return toSessionContext(user, await householdsRepository.findActiveMembership(user.id));
 }
 
 export async function getSessionContext(userId: string): Promise<SessionContext> {

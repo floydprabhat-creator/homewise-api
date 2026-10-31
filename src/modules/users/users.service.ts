@@ -7,8 +7,10 @@ import { logger } from '../../lib/logger.js';
 import { comparePassword, hashPassword } from '../../lib/password.js';
 import { storage } from '../../lib/storage/index.js';
 import { hashToken } from '../../lib/tokens.js';
+import type { User } from '../../db/schema/index.js';
 import { AppError } from '../../utils/app-error.js';
 import * as authService from '../auth/auth.service.js';
+import type { ResetPasswordInput } from '../auth/auth.schemas.js';
 import * as householdsRepository from '../households/households.repository.js';
 import * as passwordCodesRepository from './password-codes.repository.js';
 import type { ChangePasswordInput, UpdateProfileInput } from './users.schemas.js';
@@ -66,24 +68,42 @@ export async function avatarLocation(viewer: { userId: string; householdId: stri
   return storage.getSignedUrl(user.avatarKey, SIGNED_URL_TTL_SECONDS);
 }
 
-/** Emails a 6-digit code (10 minutes, one per minute) for changing the password without the current one. */
-export async function sendPasswordCode(userId: string) {
-  const user = await findUser(userId);
+async function sentRecently(userId: string) {
   const latest = await passwordCodesRepository.findLatest(userId);
-  if (latest && Date.now() - latest.createdAt.getTime() < CODE_RESEND_SECONDS * 1000) {
-    throw new AppError(429, 'TOO_MANY_REQUESTS', 'A code was just sent. Wait a minute before asking for another.');
-  }
+  return Boolean(latest && Date.now() - latest.createdAt.getTime() < CODE_RESEND_SECONDS * 1000);
+}
 
+async function issueCode(user: User) {
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   const expiresAt = new Date(Date.now() + CODE_TTL_MINUTES * 60_000);
-  await passwordCodesRepository.create({ userId, codeHash: codeHash(userId, code), expiresAt });
+  await passwordCodesRepository.create({ userId: user.id, codeHash: codeHash(user.id, code), expiresAt });
   try {
     await sendEmail(passwordCodeEmail(user.email, user.name.split(' ')[0]!, code, CODE_TTL_MINUTES));
   } catch (err) {
-    logger.error({ err, userId }, 'Sending password code failed');
+    logger.error({ err, userId: user.id }, 'Sending password code failed');
     throw new AppError(503, 'EMAIL_FAILED', "The code couldn't be sent. Try again in a minute.");
   }
-  return { sentTo: user.email, expiresAt };
+  return expiresAt;
+}
+
+/** Emails a 6-digit code (10 minutes, one per minute) for changing the password without the current one. */
+export async function sendPasswordCode(userId: string) {
+  const user = await findUser(userId);
+  if (await sentRecently(userId)) {
+    throw new AppError(429, 'TOO_MANY_REQUESTS', 'A code was just sent. Wait a minute before asking for another.');
+  }
+  return { sentTo: user.email, expiresAt: await issueCode(user) };
+}
+
+/**
+ * Forgot password, logged out: the same code, sent to `email`. The answer is the same whether or not
+ * the account exists (and a second request inside a minute is quietly skipped), so it can't be used
+ * to find out who has an account.
+ */
+export async function sendResetCode(email: string) {
+  const user = await usersRepository.findByEmail(email);
+  if (user && !(await sentRecently(user.id))) await issueCode(user);
+  return { sentTo: email };
 }
 
 async function assertCode(userId: string, code: string) {
@@ -116,12 +136,28 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
   } else {
     await assertCode(userId, input.code!);
   }
-  if (await comparePassword(input.newPassword, user.passwordHash)) {
+  await setNewPassword(user, input.newPassword);
+}
+
+/**
+ * Forgot password: the emailed code proves it's them. An unknown email gets the same answer as an
+ * expired code. Every session is signed out; returns the user so the caller can sign this device in.
+ */
+export async function resetPassword(input: ResetPasswordInput) {
+  const user = await usersRepository.findByEmail(input.email);
+  if (!user) throw AppError.badRequest('This code has expired or was already used. Request a new one.', { code: 'Request a new code' });
+  await assertCode(user.id, input.code);
+  await setNewPassword(user, input.newPassword);
+  return user;
+}
+
+async function setNewPassword(user: User, newPassword: string) {
+  if (await comparePassword(newPassword, user.passwordHash)) {
     throw AppError.badRequest('Choose a password you are not already using', { newPassword: 'Same as your current password' });
   }
 
-  await usersRepository.updatePassword(userId, await hashPassword(input.newPassword), new Date());
+  await usersRepository.updatePassword(user.id, await hashPassword(newPassword), new Date());
   await sendEmail(passwordChangedEmail(user.email, user.name.split(' ')[0]!)).catch((err) =>
-    logger.error({ err, userId }, 'Sending password-changed email failed'),
+    logger.error({ err, userId: user.id }, 'Sending password-changed email failed'),
   );
 }
