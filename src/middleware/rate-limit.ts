@@ -11,9 +11,10 @@ const ipAndEmail = (req: Request) => {
   return `${ipKeyGenerator(req.ip ?? '')}:${email}`;
 };
 
-/** 5 attempts per 15 minutes for the same IP + email; the 6th gets 429. */
+/** 5 failed attempts per 15 minutes for the same IP + email; the 6th gets 429. Successful logins don't count. */
 export const loginRateLimit = rateLimit({
   ...LOGIN_RATE_LIMIT,
+  skipSuccessfulRequests: true,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   keyGenerator: ipAndEmail,

@@ -15,7 +15,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
   if (typeof token !== 'string' || !token) throw AppError.unauthorized();
 
   const verified = verifySessionToken(token);
-  const session = verified ? await authService.resolveSession(verified.userId, verified.issuedAt) : null;
+  const session = verified ? await authService.resolveSession(verified.userId, verified.issuedAtMs) : null;
   if (!session) {
     clearSessionCookie(res);
     throw AppError.unauthorized('Your session has expired. Please log in again.');

@@ -13,7 +13,7 @@ import type { LoginInput, PasswordResetCodeInput, RegisterInput, ResetPasswordIn
 
 type Membership = Awaited<ReturnType<typeof householdsRepository.findActiveMembership>>;
 
-export type SessionContext = {
+type SessionContext = {
   user: { id: string; name: string; email: string; avatarUrl: string | null; createdAt: Date };
   household: { id: string; name: string; type: 'PERSONAL' | 'FAMILY' } | null;
   role: 'HEAD' | 'MEMBER' | null;
@@ -90,12 +90,13 @@ export async function getSessionContext(userId: string): Promise<SessionContext>
  * Used by requireAuth on every request. Returns null when the user no longer exists, or when the
  * token was issued before their last password change (that signs out every other device).
  */
-export async function resolveSession(userId: string, issuedAt: number): Promise<SessionAuth | null> {
+export async function resolveSession(userId: string, issuedAtMs: number): Promise<SessionAuth | null> {
   const [user, membership] = await Promise.all([
     usersRepository.findById(userId),
     householdsRepository.findActiveMembership(userId),
   ]);
   if (!user) return null;
-  if (user.passwordChangedAt && issuedAt < Math.floor(user.passwordChangedAt.getTime() / 1000)) return null;
+  // Compared to the millisecond, so a session issued in the same second just before the change is signed out too.
+  if (user.passwordChangedAt && issuedAtMs < user.passwordChangedAt.getTime()) return null;
   return { userId, householdId: membership?.household.id ?? null, role: membership?.role ?? null };
 }
