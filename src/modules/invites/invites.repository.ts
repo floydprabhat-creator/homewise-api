@@ -6,6 +6,7 @@ import type { DbClient } from '../../db/types.js';
 const listColumns = {
   id: invites.id,
   email: invites.email,
+  name: invites.name,
   status: invites.status,
   expiresAt: invites.expiresAt,
   createdAt: invites.createdAt,
@@ -33,6 +34,7 @@ export async function findByTokenHash(hash: string, client: DbClient = db) {
       id: invites.id,
       householdId: invites.householdId,
       email: invites.email,
+      name: invites.name,
       status: invites.status,
       expiresAt: invites.expiresAt,
       invitedBy: invites.invitedBy,
@@ -68,7 +70,7 @@ export async function countPending(householdId: string, now: Date, client: DbCli
 
 export async function findById(householdId: string, id: string) {
   const [row] = await db
-    .select({ id: invites.id, email: invites.email, status: invites.status, expiresAt: invites.expiresAt })
+    .select({ id: invites.id, email: invites.email, name: invites.name, status: invites.status, expiresAt: invites.expiresAt })
     .from(invites)
     .where(and(eq(invites.householdId, householdId), eq(invites.id, id)))
     .limit(1);
@@ -92,11 +94,11 @@ export async function revoke(householdId: string, id: string) {
     .where(and(eq(invites.householdId, householdId), eq(invites.id, id)));
 }
 
-/** Resend: a new token and expiry; an expired invite becomes PENDING again. */
-export async function refreshToken(householdId: string, id: string, tokenHash: string, expiresAt: Date) {
+/** Resend: a new token and expiry; an expired invite becomes PENDING again. `name` is only set when given. */
+export async function refreshToken(householdId: string, id: string, tokenHash: string, expiresAt: Date, name?: string) {
   const [row] = await db
     .update(invites)
-    .set({ tokenHash, expiresAt, status: 'PENDING' })
+    .set({ tokenHash, expiresAt, status: 'PENDING', ...(name !== undefined && { name }) })
     .where(and(eq(invites.householdId, householdId), eq(invites.id, id)))
     .returning(listColumns);
   return row;

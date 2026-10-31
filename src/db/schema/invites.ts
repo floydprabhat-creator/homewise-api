@@ -14,6 +14,8 @@ export const invites = pgTable(
       .references(() => households.id),
     /** Lowercased. Accepting requires the logged-in email to match. */
     email: varchar('email', { length: 254 }).notNull(),
+    /** Optional, given by the head: greets the invitee and prefills their sign-up. */
+    name: varchar('name', { length: 80 }),
     /** SHA-256 of the token; the plain token only exists in the email link. */
     tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
     status: inviteStatusEnum('status').notNull().default('PENDING'),

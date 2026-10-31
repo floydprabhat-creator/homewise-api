@@ -43,6 +43,13 @@
       "when": 1793269617486,
       "tag": "0005_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793432062179,
+      "tag": "0006_invite_name",
+      "breakpoints": true
     }
   ]
 }

@@ -37,20 +37,21 @@ const NOT_USABLE: Record<Exclude<InviteStatusView, 'PENDING'>, () => AppError> =
   ACCEPTED: () => new AppError(409, 'INVITE_USED', 'This invite has already been used.'),
 };
 
-async function sendInvite(auth: AuthContext, email: string, token: string, expiresAt: Date) {
+async function sendInvite(auth: AuthContext, to: { email: string; name: string | null }, token: string, expiresAt: Date) {
   const [household, inviter] = await Promise.all([
     householdsRepository.findById(auth.householdId),
     usersRepository.findById(auth.userId),
   ]);
   const message = inviteEmail({
-    to: email,
+    to: to.email,
+    name: to.name,
     inviterName: inviter?.name ?? 'Your family',
     familyName: household?.name ?? 'their family',
     link: `${env.APP_URL}/invite/${token}`,
     expiresOn: formatDay(expiresAt.toISOString().slice(0, 10)),
   });
   // The invite is saved either way; a failed send can be retried with Resend.
-  await sendEmail(message).catch((err) => logger.error({ err, to: email }, 'Sending invite email failed'));
+  await sendEmail(message).catch((err) => logger.error({ err, to: to.email }, 'Sending invite email failed'));
 }
 
 async function assertFamily(householdId: string) {
@@ -82,7 +83,7 @@ export async function create(auth: AuthContext, input: CreateInviteInput) {
   if (members + invited >= MAX_HOUSEHOLD_MEMBERS) throw familyFull();
 
   // A PENDING row past its expiry (the daily job hasn't run yet) gets a fresh link instead.
-  if (pending) return resend(auth, pending.id);
+  if (pending) return resend(auth, pending.id, input.name);
 
   const token = generateToken();
   const expiresAt = expiryFromNow();
@@ -91,6 +92,7 @@ export async function create(auth: AuthContext, input: CreateInviteInput) {
     invite = await invitesRepository.create({
       householdId: auth.householdId,
       email: input.email,
+      name: input.name ?? null,
       tokenHash: hashToken(token),
       invitedBy: auth.userId,
       expiresAt,
@@ -100,11 +102,12 @@ export async function create(auth: AuthContext, input: CreateInviteInput) {
     throw err;
   }
 
-  await sendInvite(auth, input.email, token, expiresAt);
+  await sendInvite(auth, invite, token, expiresAt);
   return invite;
 }
 
-export async function resend(auth: AuthContext, id: string) {
+/** `name` replaces the saved one when re-inviting the same email; otherwise the saved one is kept. */
+export async function resend(auth: AuthContext, id: string, name?: string) {
   const invite = await invitesRepository.findById(auth.householdId, id);
   if (!invite) throw AppError.notFound('Invite not found');
   if (invite.status !== 'PENDING' && invite.status !== 'EXPIRED') {
@@ -115,12 +118,12 @@ export async function resend(auth: AuthContext, id: string) {
   const expiresAt = expiryFromNow();
   let refreshed;
   try {
-    refreshed = await invitesRepository.refreshToken(auth.householdId, id, hashToken(token), expiresAt);
+    refreshed = await invitesRepository.refreshToken(auth.householdId, id, hashToken(token), expiresAt, name);
   } catch (err) {
     if (isUniqueViolation(err, 'invites_household_email_pending_idx')) throw duplicateInvite();
     throw err;
   }
-  await sendInvite(auth, invite.email, token, expiresAt);
+  await sendInvite(auth, { email: invite.email, name: name ?? invite.name }, token, expiresAt);
   return refreshed;
 }
 
@@ -140,6 +143,7 @@ export async function preview(token: string) {
     familyName: invite.familyName,
     inviterName: invite.inviterName,
     email: invite.email,
+    name: invite.name,
     status,
     expiresAt: invite.expiresAt,
   };

@@ -1,7 +1,16 @@
 import { z } from 'zod';
 import { emailSchema } from '../../domain/common.schemas.js';
 
-export const createInviteSchema = z.object({ email: emailSchema });
+export const createInviteSchema = z.object({
+  email: emailSchema,
+  /** Optional; blank means none. */
+  name: z
+    .string()
+    .trim()
+    .max(80, 'Keep the name under 80 characters')
+    .optional()
+    .transform((v) => v || undefined),
+});
 
 // base64url of 32 bytes is 43 characters; anything else can't be a token.
 export const tokenParamSchema = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{43}$/, 'Invalid invite link') });
