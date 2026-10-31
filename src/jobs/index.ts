@@ -15,14 +15,15 @@ function run(name: JobName) {
 }
 
 /**
- * Registered when the server starts: the daily job at 08:00 IST and the email sender every 5 minutes.
+ * Registered when the server starts: the daily job at 08:00 IST (it sends its emails as its last step)
+ * and an hourly email run that retries failed sends. Budget alerts are sent as they happen.
  * If the host sleeps through 08:00, trigger `daily` through POST /internal/jobs/daily/run instead.
  */
 export function startSchedules() {
   const tasks = [
     cron.schedule('0 8 * * *', run('daily'), { timezone: TIMEZONE, name: 'daily', noOverlap: true }),
-    cron.schedule('*/5 * * * *', run('send-emails'), { timezone: TIMEZONE, name: 'send-emails', noOverlap: true }),
+    cron.schedule('0 * * * *', run('send-emails'), { timezone: TIMEZONE, name: 'send-emails', noOverlap: true }),
   ];
-  logger.info('Scheduled: daily at 08:00 IST, send-emails every 5 minutes');
+  logger.info('Scheduled: daily at 08:00 IST, send-emails retry hourly');
   return () => tasks.forEach((t) => t.stop());
 }

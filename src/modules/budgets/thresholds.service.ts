@@ -2,6 +2,7 @@ import { logger } from '../../lib/logger.js';
 import type { Bucket } from '../../domain/constants.js';
 import { formatINR, monthName } from '../../utils/format.js';
 import * as householdsRepository from '../households/households.repository.js';
+import * as emailsService from '../notifications/emails.service.js';
 import { notify } from '../notifications/notify.js';
 import type { BudgetUsage, LimitState } from './usage.js';
 import * as usageService from './usage.service.js';
@@ -50,11 +51,12 @@ export async function checkAfterChange(householdId: string, month: string): Prom
 
     const members = await householdsRepository.listActiveMembers(householdId);
     const head = members.find((m) => m.role === 'HEAD');
+    let emailQueued = false;
 
     for (const c of limitCrossings(usage)) {
       const threshold = c.state === 'EXCEEDED' ? 100 : 80;
       for (const m of members) {
-        await notify({
+        const created = await notify({
           householdId,
           userId: m.userId,
           type: c.state === 'EXCEEDED' ? 'BUDGET_EXCEEDED' : 'BUDGET_WARNING',
@@ -65,7 +67,12 @@ export async function checkAfterChange(householdId: string, month: string): Prom
           // The head is emailed; members see it in the app.
           email: m.role === 'HEAD',
         });
+        if (created && m.role === 'HEAD') emailQueued = true;
       }
+    }
+    // Budget alerts are emailed now, not at the next 08:00 run. Not awaited: the response doesn't wait on Resend.
+    if (emailQueued) {
+      emailsService.sendPending().catch((err) => logger.error({ err, householdId }, 'Sending budget alert email failed'));
     }
 
     if (!head) return;

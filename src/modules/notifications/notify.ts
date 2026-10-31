@@ -11,13 +11,16 @@ type NotifyInput = {
   body: string;
   link?: string;
   dedupeKey: string;
-  /** Queue an email too (the send-emails job picks up PENDING rows). */
+  /** Queue an email too (sent by the send-emails job: after the daily job, or right away for budget alerts). */
   email: boolean;
 };
 
-/** The single way to create a notification. Accepts a transaction client so it rolls back with the change. */
+/**
+ * The single way to create a notification. Accepts a transaction client so it rolls back with the change.
+ * Returns false when the dedupe key was already used, so nothing new was created.
+ */
 export async function notify({ email, ...input }: NotifyInput, client: DbClient = db) {
-  await notificationsRepository.insertIgnoreDuplicate(
+  return notificationsRepository.insertIgnoreDuplicate(
     { ...input, emailStatus: email ? 'PENDING' : 'NOT_REQUIRED' },
     client,
   );

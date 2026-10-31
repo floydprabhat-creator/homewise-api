@@ -28,7 +28,8 @@ function compose(rows: Pending[]) {
 }
 
 /**
- * The outbox sender (every 5 minutes). Claims pending rows with SKIP LOCKED inside one transaction,
+ * The outbox sender: the last step of the daily job, right after a budget alert, and hourly to retry
+ * failures. Runs may overlap safely. Claims pending rows with SKIP LOCKED inside one transaction,
  * sends, then marks them SENT, or counts the attempt and leaves them for the next run (FAILED after 3).
  */
 export async function sendPending() {

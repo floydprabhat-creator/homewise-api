@@ -7,8 +7,14 @@ import { pageToOffset } from '../../utils/pagination.js';
 export const MAX_EMAIL_ATTEMPTS = 3;
 
 /** Inserts unless a notification with the same dedupe key exists. */
+/** True when a row was inserted, false when the dedupe key already existed. */
 export async function insertIgnoreDuplicate(data: typeof notifications.$inferInsert, client: DbClient = db) {
-  await client.insert(notifications).values(data).onConflictDoNothing({ target: notifications.dedupeKey });
+  const rows = await client
+    .insert(notifications)
+    .values(data)
+    .onConflictDoNothing({ target: notifications.dedupeKey })
+    .returning({ id: notifications.id });
+  return rows.length > 0;
 }
 
 /** Always scoped by userId: a user only ever sees their own notifications. */
