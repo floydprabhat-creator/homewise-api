@@ -21,3 +21,6 @@ export const SIGNED_URL_TTL_SECONDS = 5 * 60;
 
 /** Bill scans per household per day, so a bug or misuse can't exhaust the AI quota. */
 export const BILL_SCANS_PER_DAY = 50;
+
+/** Budget assistant suggestions per household per day. */
+export const BUDGET_ADVICE_PER_DAY = 30;

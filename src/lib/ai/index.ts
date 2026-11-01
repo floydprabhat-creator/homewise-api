@@ -1,4 +1,4 @@
-import { ApiError, GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { ApiError, GoogleGenAI, ThinkingLevel, type Part } from '@google/genai';
 import { env } from '../../config/env.js';
 
 type AiFile = { buffer: Buffer; mimeType: string };
@@ -21,11 +21,20 @@ export const aiEnabled = gemini !== null;
  * `schema` (a JSON Schema). Throws when AI is off, the call fails, or the answer isn't JSON; the
  * caller still validates every field.
  */
-export async function readFileAsJson(file: AiFile, instructions: string, schema: object): Promise<unknown> {
+export function readFileAsJson(file: AiFile, instructions: string, schema: object): Promise<unknown> {
+  return askForJson([{ inlineData: { mimeType: file.mimeType, data: file.buffer.toString('base64') } }, { text: instructions }], schema);
+}
+
+/** Text only: the same as readFileAsJson without a file. */
+export function answerAsJson(instructions: string, schema: object): Promise<unknown> {
+  return askForJson([{ text: instructions }], schema);
+}
+
+async function askForJson(parts: Part[], schema: object): Promise<unknown> {
   if (!gemini) throw new Error('GEMINI_API_KEY is not set');
   for (const [i, model] of MODELS.entries()) {
     try {
-      return await generateJson(gemini, model, file, instructions, schema);
+      return await generateJson(gemini, model, parts, schema);
     } catch (err) {
       if (!isAiBusy(err) || i === MODELS.length - 1) throw err;
     }
@@ -33,19 +42,14 @@ export async function readFileAsJson(file: AiFile, instructions: string, schema:
   throw new Error('No Gemini model configured');
 }
 
-async function generateJson(gemini: GoogleGenAI, model: string, file: AiFile, instructions: string, schema: object) {
+async function generateJson(gemini: GoogleGenAI, model: string, parts: Part[], schema: object) {
   const response = await gemini.models.generateContent({
     model,
-    contents: [
-      {
-        role: 'user',
-        parts: [{ inlineData: { mimeType: file.mimeType, data: file.buffer.toString('base64') } }, { text: instructions }],
-      },
-    ],
+    contents: [{ role: 'user', parts }],
     config: {
       responseMimeType: 'application/json',
       responseJsonSchema: schema,
-      // Reading a bill is extraction, not reasoning: low thinking keeps it quicker.
+      // Extraction and short suggestions, not deep reasoning: low thinking keeps it quicker.
       thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
     },
   });
