@@ -59,9 +59,10 @@ The seed refuses to run when `NODE_ENV=production`, and running it again leaves 
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `JWT_SECRET` | Yes | 32+ characters |
 | `APP_URL` | In production | The web app's URL, used for links in emails (default `http://localhost:3000`) |
-| `SMTP_USER` / `SMTP_PASS` | To send email | A Gmail address and an App Password; without them emails are printed to the log |
+| `BREVO_API_KEY` | To send email (option 1) | Brevo's email API over HTTPS; use this on hosts that block SMTP, such as Render's free plan |
+| `SMTP_USER` / `SMTP_PASS` | To send email (option 2) | A Gmail address and an App Password |
 | `SMTP_HOST` / `SMTP_PORT` | No | Default to Gmail (`smtp.gmail.com`, `465`) |
-| `EMAIL_FROM` | No | Defaults to `HomeWise <SMTP_USER>` |
+| `EMAIL_FROM` | With Brevo | `Name <address>`, using a sender verified in Brevo; for SMTP it defaults to `HomeWise <SMTP_USER>` |
 | `CRON_SECRET` | For `/internal` | 16+ characters; guards the on-demand job endpoint |
 | `TRUST_PROXY` | Behind a proxy | Number of proxies in front of the API, so rate limits see each visitor's IP |
 | `GEMINI_API_KEY` | For AI features | From aistudio.google.com; without it the AI features are hidden |
@@ -70,7 +71,13 @@ The seed refuses to run when `NODE_ENV=production`, and running it again leaves 
 
 ## Emails
 
-With `EMAIL_DRIVER=log` (the default when `SMTP_USER` is not set), emails such as invites, reset codes and bill reminders are printed to the API log instead of being sent, so links and codes can be copied from there. With `SMTP_USER` and `SMTP_PASS` set, Nodemailer sends through Gmail's SMTP server (about 500 emails a day on a Gmail account).
+Emails (invites, reset codes, bill reminders, budget warnings) go out one of three ways, picked from the settings:
+
+- **Brevo** (when `BREVO_API_KEY` is set): Brevo's email API over HTTPS, 300 emails a day on the free plan. Works on hosts that block outgoing SMTP, including Render's free plan. Needs `EMAIL_FROM` with a sender address verified in Brevo.
+- **SMTP** (when `SMTP_USER` and `SMTP_PASS` are set): Nodemailer through Gmail's SMTP server, about 500 emails a day on a Gmail account.
+- **Log** (neither set): emails are printed to the API log instead of being sent, so links and codes can be copied from there in development.
+
+A send gives up after 10 seconds. Invite emails go out in the background, so a slow or failed send never holds up creating an invite (use Resend to retry).
 
 ## AI features
 

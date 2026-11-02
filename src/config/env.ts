@@ -9,14 +9,19 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   /** The web app, for links in emails. */
   APP_URL: z.url().default('http://localhost:3000'),
-  /** 'log' prints emails instead of sending them. Defaults to 'smtp' when SMTP_USER is set, else 'log'. */
-  EMAIL_DRIVER: z.enum(['log', 'smtp']).optional(),
+  /**
+   * 'log' prints emails instead of sending them. Defaults to 'brevo' when BREVO_API_KEY is set, else
+   * 'smtp' when SMTP_USER is set, else 'log'.
+   */
+  EMAIL_DRIVER: z.enum(['log', 'smtp', 'brevo']).optional(),
+  /** Brevo's email API, over HTTPS: works where outgoing SMTP is blocked (e.g. Render's free plan). */
+  BREVO_API_KEY: z.string().optional(),
   /** SMTP via Nodemailer; the defaults are Gmail's (sign in with an App Password, not the account password). */
   SMTP_HOST: z.string().default('smtp.gmail.com'),
   SMTP_PORT: z.coerce.number().int().positive().default(465),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  /** Without it: "HomeWise <SMTP_USER>". */
+  /** "Name <address>". Brevo needs it, with an address verified as a sender in Brevo; for SMTP it defaults to "HomeWise <SMTP_USER>". */
   EMAIL_FROM: z.string().optional(),
   /** Google Gemini, for reading bill photos and PDFs. Without a key the "Fill in from a bill" feature is off. */
   GEMINI_API_KEY: z.string().optional(),
@@ -37,9 +42,13 @@ if (!parsed.success) {
 }
 
 const data = parsed.data;
-const emailDriver = data.EMAIL_DRIVER ?? (data.SMTP_USER ? 'smtp' : 'log');
+const emailDriver = data.EMAIL_DRIVER ?? (data.BREVO_API_KEY ? 'brevo' : data.SMTP_USER ? 'smtp' : 'log');
 if (emailDriver === 'smtp' && !(data.SMTP_USER && data.SMTP_PASS)) {
   console.error('EMAIL_DRIVER=smtp needs SMTP_USER and SMTP_PASS');
+  process.exit(1);
+}
+if (emailDriver === 'brevo' && !(data.BREVO_API_KEY && data.EMAIL_FROM)) {
+  console.error('EMAIL_DRIVER=brevo needs BREVO_API_KEY and EMAIL_FROM (a sender verified in Brevo)');
   process.exit(1);
 }
 const emailFrom = data.EMAIL_FROM || `HomeWise <${data.SMTP_USER ?? 'no-reply@localhost'}>`;

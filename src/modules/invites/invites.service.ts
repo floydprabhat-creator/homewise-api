@@ -37,21 +37,26 @@ const NOT_USABLE: Record<Exclude<InviteStatusView, 'PENDING'>, () => AppError> =
   ACCEPTED: () => new AppError(409, 'INVITE_USED', 'This invite has already been used.'),
 };
 
+/** Never throws: the invite is saved either way, and a failed send can be retried with Resend. */
 async function sendInvite(auth: AuthContext, to: { email: string; name: string | null }, token: string, expiresAt: Date) {
-  const [household, inviter] = await Promise.all([
-    householdsRepository.findById(auth.householdId),
-    usersRepository.findById(auth.userId),
-  ]);
-  const message = inviteEmail({
-    to: to.email,
-    name: to.name,
-    inviterName: inviter?.name ?? 'Your family',
-    familyName: household?.name ?? 'their family',
-    link: `${env.APP_URL}/invite/${token}`,
-    expiresOn: formatDay(expiresAt.toISOString().slice(0, 10)),
-  });
-  // The invite is saved either way; a failed send can be retried with Resend.
-  await sendEmail(message).catch((err) => logger.error({ err, to: to.email }, 'Sending invite email failed'));
+  try {
+    const [household, inviter] = await Promise.all([
+      householdsRepository.findById(auth.householdId),
+      usersRepository.findById(auth.userId),
+    ]);
+    await sendEmail(
+      inviteEmail({
+        to: to.email,
+        name: to.name,
+        inviterName: inviter?.name ?? 'Your family',
+        familyName: household?.name ?? 'their family',
+        link: `${env.APP_URL}/invite/${token}`,
+        expiresOn: formatDay(expiresAt.toISOString().slice(0, 10)),
+      }),
+    );
+  } catch (err) {
+    logger.error({ err, to: to.email }, 'Sending invite email failed');
+  }
 }
 
 async function assertFamily(householdId: string) {
@@ -102,7 +107,8 @@ export async function create(auth: AuthContext, input: CreateInviteInput) {
     throw err;
   }
 
-  await sendInvite(auth, invite, token, expiresAt);
+  // Not awaited: the invite is saved either way, and a slow mail server shouldn't hold up the response.
+  void sendInvite(auth, invite, token, expiresAt);
   return invite;
 }
 
@@ -123,7 +129,7 @@ export async function resend(auth: AuthContext, id: string, name?: string) {
     if (isUniqueViolation(err, 'invites_household_email_pending_idx')) throw duplicateInvite();
     throw err;
   }
-  await sendInvite(auth, { email: invite.email, name: name ?? invite.name }, token, expiresAt);
+  void sendInvite(auth, { email: invite.email, name: name ?? invite.name }, token, expiresAt);
   return refreshed;
 }
 
