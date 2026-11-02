@@ -50,7 +50,18 @@ Created by `pnpm db:seed`. Log in at http://localhost:3000/login with the web ap
 | Password | `password123` |
 | Role | `HEAD` of the household "Demo Family" |
 
-The seed refuses to run when `NODE_ENV=production`, and running it again leaves an existing demo user unchanged.
+The seed refuses to run when `NODE_ENV=production`, refuses the demo account on any database that isn't local, and running it again leaves an existing user unchanged.
+
+### A test account on the live database
+
+Run the seed from your own machine with your own login and the live connection string. Set them for that one command only and use single quotes, since passwords and connection strings contain `@`, `#` and `&`:
+
+```bash
+DATABASE_URL='<Neon connection string>' SEED_EMAIL='you+test@example.com' SEED_PASSWORD='<strong password>' \
+  SEED_NAME='Your Name' SEED_HOUSEHOLD='Test Family' pnpm db:seed
+```
+
+It creates the same household, categories, budget and sample spending as the demo account, and never prints the password.
 
 ## Environment variables
 
@@ -133,7 +144,7 @@ On another host: build with the command above, run `node dist/db/migrate.js` bef
 | `pnpm typecheck` | TypeScript check |
 | `pnpm db:generate` | Generate a SQL migration from `src/db/schema/` changes |
 | `pnpm db:migrate` | Apply pending migrations |
-| `pnpm db:seed` | Seed local demo data |
+| `pnpm db:seed` | Seed the local demo account, or your own with `SEED_EMAIL` / `SEED_PASSWORD` |
 | `pnpm job <name> [date]` | Run a job once: `daily`, `send-emails`, `expire-invites`, `carry-over-budgets`, `generate-occurrences`, `bill-reminders` |
 | `pnpm db:check` | Test the database connection |
 | `pnpm db:studio` | Open Drizzle Studio |

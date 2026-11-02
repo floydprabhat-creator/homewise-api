@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
-import { isProduction } from '../config/env.js';
+import { env, isProduction } from '../config/env.js';
+import { emailSchema } from '../domain/common.schemas.js';
 import { hashPassword } from '../lib/password.js';
 import * as budgetsRepository from '../modules/budgets/budgets.repository.js';
 import * as categoriesRepository from '../modules/categories/categories.repository.js';
@@ -7,9 +8,18 @@ import { currentMonthIST, todayIST } from '../utils/dates.js';
 import { closeDb, db } from './index.js';
 import { householdMembers, households, transactions, users } from './schema/index.js';
 
-// Local development only. Safe to run more than once: each step skips what already exists.
-const DEMO_USER = { name: 'Demo Head', email: 'demo@homewise.app', password: 'password123' };
-const DEMO_HOUSEHOLD = { name: 'Demo Family', type: 'FAMILY' as const };
+// Safe to run more than once: each step skips what already exists. With no SEED_* settings it creates the
+// public demo account, which is only allowed on a local database. SEED_EMAIL + SEED_PASSWORD (and optionally
+// SEED_NAME, SEED_HOUSEHOLD) create your own account instead, e.g. a test user on the live database.
+const custom = Boolean(process.env.SEED_EMAIL || process.env.SEED_PASSWORD);
+const DEMO_USER = custom
+  ? {
+      name: process.env.SEED_NAME?.trim() || 'Test Head',
+      email: emailSchema.parse(process.env.SEED_EMAIL ?? ''),
+      password: process.env.SEED_PASSWORD ?? '',
+    }
+  : { name: 'Demo Head', email: 'demo@homewise.app', password: 'password123' };
+const DEMO_HOUSEHOLD = { name: process.env.SEED_HOUSEHOLD?.trim() || (custom ? 'Test Family' : 'Demo Family'), type: 'FAMILY' as const };
 
 // Sample spending for the current month: [category, amount, day of month, note]
 const SAMPLE_SPENDING: [string, string, number, string | null][] = [
@@ -23,8 +33,18 @@ const SAMPLE_SPENDING: [string, string, number, string | null][] = [
   ['Subscriptions', '649.00', 8, 'Netflix'],
 ];
 
+// Never on the server itself; run it from your own machine with DATABASE_URL pointed at the database.
 if (isProduction) {
-  console.error('Refusing to seed demo data in production');
+  console.error('Refusing to seed with NODE_ENV=production');
+  process.exit(1);
+}
+const localDb = ['localhost', '127.0.0.1', '::1'].includes(new URL(env.DATABASE_URL).hostname.replace(/^\[|\]$/g, ''));
+if (!custom && !localDb) {
+  console.error('The public demo account is for a local database only. Set SEED_EMAIL and SEED_PASSWORD to seed this one.');
+  process.exit(1);
+}
+if (custom && DEMO_USER.password.length < 8) {
+  console.error('SEED_PASSWORD must be at least 8 characters');
   process.exit(1);
 }
 
@@ -35,7 +55,7 @@ if (!user) {
     .insert(users)
     .values({ name: DEMO_USER.name, email: DEMO_USER.email, passwordHash })
     .returning({ id: users.id });
-  console.log(`Created demo user: ${DEMO_USER.email} / ${DEMO_USER.password}`);
+  console.log(`Created user: ${DEMO_USER.email}${custom ? '' : ` / ${DEMO_USER.password}`}`);
 }
 
 let [membership] = await db
@@ -47,7 +67,7 @@ if (!membership) {
   const [household] = await db.insert(households).values(DEMO_HOUSEHOLD).returning({ id: households.id });
   await db.insert(householdMembers).values({ householdId: household!.id, userId: user!.id, role: 'HEAD' });
   membership = { householdId: household!.id };
-  console.log(`Created household "${DEMO_HOUSEHOLD.name}" with the demo user as HEAD`);
+  console.log(`Created household "${DEMO_HOUSEHOLD.name}" with ${DEMO_USER.email} as HEAD`);
 }
 const householdId = membership.householdId;
 
