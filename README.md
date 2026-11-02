@@ -107,14 +107,22 @@ curl -X POST http://localhost:4000/api/internal/jobs/daily/run \
 
 ## Deploying
 
-| Step | Command |
-| --- | --- |
-| Build | `pnpm install --frozen-lockfile && pnpm build` |
-| Before each deploy | `node dist/db/migrate.js` |
-| Start | `node dist/server.js` |
-| Health check | `/api/health` |
+Live at https://homewise-api-5wmf.onrender.com (reached by the web app through https://homewise-web-dusky.vercel.app). It runs on a Render web service, Singapore region, with a Neon PostgreSQL database. Pushes to `main` deploy automatically.
 
-Keep the server always on, since node-cron runs the 08:00 job in-process. Uploaded files are stored on local disk for now, so they don't survive a redeploy on hosts with ephemeral disks.
+| Render setting | Value |
+| --- | --- |
+| Build command | `npm install -g pnpm@10.34.9 && pnpm install --frozen-lockfile --prod=false && pnpm build` |
+| Start command | `node dist/db/migrate.js && node dist/server.js` |
+| Health check path | `/api/health` |
+| Environment | `NODE_ENV=production`, `NODE_VERSION=22`, `DATABASE_URL`, `JWT_SECRET`, `CRON_SECRET`, `APP_URL`, `TRUST_PROXY=1`, `BREVO_API_KEY`, `EMAIL_FROM`, `GEMINI_API_KEY` |
+
+- `--prod=false` installs the build tools even with `NODE_ENV=production`. Migrations run at start because Render's free plan has no pre-deploy step; they change nothing when none are new.
+- Render's free plan blocks outgoing SMTP, so email goes through Brevo there.
+- The free plan sleeps after 15 idle minutes, which pauses node-cron. An external scheduler (cron-job.org) calls `/api/health` at 07:55 IST to wake it, and `POST /api/internal/jobs/daily/run` with the `x-cron-secret` header at 08:02 as a backup; the job is idempotent. On an always-on host, node-cron runs it alone.
+- `TRUST_PROXY=1` was checked on this setup: rate limits see each visitor's own IP, through Vercel or directly.
+- Uploaded files are stored on local disk for now, so they don't survive a restart or redeploy on Render.
+
+On another host: build with the command above, run `node dist/db/migrate.js` before starting `node dist/server.js`, and point the health check at `/api/health`.
 
 ## Scripts
 
